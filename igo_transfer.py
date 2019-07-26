@@ -8,6 +8,7 @@ from shutil import copyfile
 
 # TODO - lint
 NUM_COLUMNS = 73
+
 IGO_DIR_LOCATION = '.'
 SAMPLE = 'S0000'        # TODO - looks like this is set by the nikon macro
 
@@ -18,22 +19,26 @@ def get_row_column(path):
     attr = file.split('_')
     if(len(attr) != 3):
         raise ValueError('Created file should have format [POS][RUN]_[COL]_[ROW]: %s' % path)
+
+    well = attr[0][-5:-2]     # A01
+    letter = well[0]
+    well_row = int(well[1:])
+
     row = int(attr[2])
     column = NUM_COLUMNS - int(attr[1])
 
     # TODO - validation check on row & column
+    run = attr[0][-2:]        # c1/c2
 
-    run = attr[0][-2:]
     return [row,column,run]
 
 def put_directory_if_absent(path, rsc):
     """
-    Adds directory if absent in IGO directory. Returns state of directory mapped by key
+    Adds directory if absent in destination directory
 
     Args:
-      dic (dict: str:dict/set): representation of directory
-      key (str): file/directory name
-      val (empty dict/set): Default value mapped by key if key doesn't exist
+      path (str): target directory
+      rsc (str): resource to be written to target directory
     """
     files = os.listdir(path)
     next_path = '%s/%s' % (path,rsc)
@@ -43,7 +48,7 @@ def put_directory_if_absent(path, rsc):
         print("IMPORTANT - %s was at path %s" % (rsc, path))
     return next_path
 
-def copyFileToIgoDir(path,dest,row,col,run):
+def copyFileToIgoDir(path,dest,row,col):
     row = 'R' + ('0%d' % row if row < 10 else str(row))
     col = 'C' + ('0%d' % col if col < 10 else str(col))
     name = '%s_%s_0000_00_%s.tif' % (row,col,run)
@@ -55,9 +60,6 @@ def copyFileToIgoDir(path,dest,row,col,run):
 
     file_path = '%s/%s' % (dir_path,name)
     # TODO - Check that name is not being added
-    print(path)
-    print(file_path)
-    print('Copying from %s to %s' % (path,file_path))
     copyfile(path,file_path)
 
 class EventHandler(PatternMatchingEventHandler):

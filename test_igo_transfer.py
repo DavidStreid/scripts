@@ -6,20 +6,19 @@ TARGET_DIR = '%s/igoDir' % os.getcwd()
 SRC_DIR = '%s/nikonDir' % os.getcwd()
 
 def createFiles(dir):
+    print('Creating files in %s' % dir)
     file = '%s/%s' % (dir,'X23c2_075_002.tif')
-    # print('writing file %s' % file)
     open(file, 'a').close()
+    print('\tFinished file creation')
     return
 
 def test_created_dir(dir):
     # print('testing directory %s was created with correct files' % dir)
-    '''
     for (root,dirs,files) in os.walk(dir, topdown=False):
         print(root)
         print(dirs)
         print(files)
         print('--------------------------------')
-    '''
     return
 
 executor = ThreadPoolExecutor(max_workers=2)
