@@ -7,27 +7,10 @@ from watchdog.events import PatternMatchingEventHandler
 from shutil import copyfile
 
 # TODO - lint
-
 NUM_COLUMNS = 73
 DESTINATION = './'
 SAMPLE = 'S0000'        # TODO - looks like this is set by the nikon macro
 IGO_DIR_LOCATION = os.getcwd() # TODO - allow user to specify
-
-'''
-    igoDir - Tracks the structure of our IGO Directory. 
-
-    {
-        run: {
-            sample: {
-                column: {
-                    row_column_sample_run.tif,...
-                }
-            }
-        }
-
-    }
-'''
-igo_dir = {}  
 
 def get_row_column(path):
     extension = '.tif'      # TODO
@@ -38,10 +21,13 @@ def get_row_column(path):
         raise ValueError('Created file should have format [POS][RUN]_[COL]_[ROW]: %s' % path)
     row = int(attr[2])
     column = NUM_COLUMNS - int(attr[1])
+
+    # TODO - validation check on row & column
+
     run = attr[0][-2:]
     return [row,column,run]
 
-def put_directory_if_absent(dic, key, val, path, rsc):
+def put_directory_if_absent(path, rsc):
     """
     Adds directory if absent in IGO directory. Returns state of directory mapped by key
 
@@ -50,21 +36,13 @@ def put_directory_if_absent(dic, key, val, path, rsc):
       key (str): file/directory name
       val (empty dict/set): Default value mapped by key if key doesn't exist
     """
-
     files = os.listdir(path)
-    '''
-    if key in dic:
-        return dic[key]
+    next_path = '%s/%s' % (path,rsc)
+    if rsc not in files:
+        os.mkdir(next_path)
     else:
-    '''
-    if key not in files:
-        # TODO - make directory in correct location
-        new_path = '%s/%s' % (path,rsc)
-        os.mkdir(new_path)
-        dic[key] = val
-        return dic[key]
-    else:
-        print("IMPORTANT - %s was at path %s" % (key, path))
+        print("IMPORTANT - %s was at path %s" % (rsc, path))
+    return next_path
 
 def copyFileToIgoDir(path,row,col,run):
     row = 'R' + ('0%d' % row if row < 10 else str(row))
@@ -72,20 +50,14 @@ def copyFileToIgoDir(path,row,col,run):
     name = '%s_%s_0000_00_%s.tif' % (row,col,run)
     dest = DESTINATION + name
 
-    dirPath = IGO_DIR_LOCATION
-    runs = put_directory_if_absent(igo_dir, run, {},dirPath,run)
-    dirPath = '%s/%s' % (IGO_DIR_LOCATION,run)
-    samples = put_directory_if_absent(runs, SAMPLE, {},dirPath,SAMPLE)
-    dirPath = '%s/%s' % (dirPath,SAMPLE)
-    columns = put_directory_if_absent(samples, col, set(),dirPath,col)
-    dirPath = '%s/%s' % (dirPath,col)
+    dir_path = IGO_DIR_LOCATION
+    dir_path = put_directory_if_absent(dir_path,run)
+    dir_path = put_directory_if_absent(dir_path,SAMPLE)
+    dir_path = put_directory_if_absent(dir_path,col)
 
-    # Check that name is not being added
-    dirPath = '%s/%s' % (dirPath,name)
-    copyfile(path,dirPath)
-    columns.add(name)
-
-    print(igo_dir)
+    file_path = '%s/%s' % (dir_path,name)
+    # TODO - Check that name is not being added
+    copyfile(path,file_path)
 
 class EventHandler(PatternMatchingEventHandler):
     def on_created(self, event):
