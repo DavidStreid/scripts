@@ -7,10 +7,30 @@ from watchdog.events import PatternMatchingEventHandler
 from shutil import copyfile
 
 # TODO - lint
-NUM_COLUMNS = 73
 
 IGO_DIR_LOCATION = '.'
 SAMPLE = 'S0000'        # TODO - looks like this is set by the nikon macro
+
+def extract_well_index(well):
+    """
+    Extracts the upper-right (row, column) position of a 3x3 well on the plate
+
+    Args:
+      well (str): Well ('X##', 'X' indicates set of 3-rows and '##' indicates the set of 3-columns. e.g. 'A01')
+    """
+    if len(well) != 3:
+        print('Well should be of format X##, e.g. \'AO1\': %s' % well)
+    if not well[0].isalpha():
+        print('First character of well should be a letter: %s' % well)
+    if not well[1:].isdigit():
+        print('Last characters of well should be digits: %s' % well)
+
+    well_char = well[0].lower() # a: 97, z: 122
+    # TODO - Verify
+    well_pos = int(well[1:])
+    row_idx = ord(well_char) - 97
+    col_idx = well_pos-1
+    return [col_idx, row_idx]
 
 def get_row_column(path):
     extension = '.tif'      # TODO
@@ -20,17 +40,18 @@ def get_row_column(path):
     if(len(attr) != 3):
         raise ValueError('Created file should have format [POS][RUN]_[COL]_[ROW]: %s' % path)
 
-    well = attr[0][-5:-2]     # A01
-    letter = well[0]
-    well_row = int(well[1:])
+    well = attr[0][-5:-2]
+    [col_idx, row_idx] = extract_well_index(well)
+    rel_row = int(attr[2])
+    rel_col = int(attr[1])
 
-    row = int(attr[2])
-    column = NUM_COLUMNS - int(attr[1])
+    # Wells are 3x3
+    row = (row_idx*3) + rel_row
+    col = (col_idx*3) + rel_col
 
     # TODO - validation check on row & column
     run = attr[0][-2:]        # c1/c2
-
-    return [row,column,run]
+    return [row,col,run]
 
 def put_directory_if_absent(path, rsc):
     """
@@ -48,7 +69,7 @@ def put_directory_if_absent(path, rsc):
         print("IMPORTANT - %s was at path %s" % (rsc, path))
     return next_path
 
-def copyFileToIgoDir(path,dest,row,col):
+def copyFileToIgoDir(path,dest,row,col,run):
     row = 'R' + ('0%d' % row if row < 10 else str(row))
     col = 'C' + ('0%d' % col if col < 10 else str(col))
     name = '%s_%s_0000_00_%s.tif' % (row,col,run)
@@ -74,6 +95,9 @@ class EventHandler(PatternMatchingEventHandler):
         except ValueError as err:
             print(err)
             return
+        except Exception as err:
+            print(err)
+            return
     def on_moved(self, event):
         print ('File moved - %s' % event.src_path)
     def on_deleted(self, event):
@@ -96,8 +120,12 @@ def transfer_to_igo_dir(dest = '.', src = '.'):
     observer.schedule(event_handler, src, recursive=True)
     observer.start()
     try:
-        while True:
-            time.sleep(1)
+        time.sleep(1)
     except KeyboardInterrupt:
         observer.stop()
     observer.join()
+
+if __name__ == '__main__':
+    TARGET_DIR = '%s/igoDir' % os.getcwd()
+    SRC_DIR = '%s/nikonDir' % os.getcwd()
+    transfer_to_igo_dir(TARGET_DIR, SRC_DIR)
