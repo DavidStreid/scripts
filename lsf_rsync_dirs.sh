@@ -25,6 +25,4 @@ for dir in ${DIRS}; do
 
   echo ${BSUB} >> ${LOG}
   eval ${BSUB} >> ${LOG}
-  
-  exit 0
 done
