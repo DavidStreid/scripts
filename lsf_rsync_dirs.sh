@@ -2,7 +2,7 @@
 # Copies all directories (one level deep) in a source directory to their target direcotry in parallel
 
 SCRIPT=$0
-LOCATION=$(dirname ${SCRIPT})
+LOCATION=$(realpath $(dirname ${SCRIPT}))
 SOURCE=$1
 TARGET=$2
 
