@@ -1,3 +1,5 @@
+import matplotlib.pyplot as plt
+
 def graph(list_of_nums, title):
   '''Creates bar graph
   :param list_of_nums, float[]
