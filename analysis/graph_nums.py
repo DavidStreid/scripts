@@ -3,8 +3,43 @@ import matplotlib.pyplot as plt
 
 DELIMITER = ","
 
-def graph(list_of_nums, title):
-  '''Creates bar graph
+
+def graph_scatter(list_of_nums, title):
+  idx_list = [ idx for idx in range(len(list_of_nums)) ]
+  plt.scatter(idx_list, list_of_nums)
+  plt.title(title)
+  plt.xlabel('idx')
+  plt.ylabel('val')
+  fname = "%s___%s" % ("_".join(title.split(" ")), "scatter")
+  plt.savefig("%s.pdf" % fname)
+  plt.close()
+
+
+def graph_scatter_aggregate(list_of_nums, title):
+  round_to = 3
+  rounded = [ round(val, round_to) for val in list_of_nums ]
+  counted_dic = {}
+  for val in rounded:
+    if val in counted_dic:
+      counted_dic[val] += 1
+    else:
+      counted_dic[val] = 1
+  x = []
+  y = []
+  for val, ct in counted_dic.items():
+    x.append(val)
+    y.append(ct)
+  plt.scatter(x, y)
+  plt.title(title)
+  plt.xlabel('val')
+  plt.ylabel('ct')
+  fname = "%s___%s" % ("_".join(title.split(" ")), "scatter_aggregate")
+  plt.savefig("%s.pdf" % fname)
+  plt.close()
+
+
+def graph_hist(list_of_nums, title):
+  '''Creates histogram
   :param list_of_nums, float[]
   :param title, str
   '''
@@ -13,9 +48,10 @@ def graph(list_of_nums, title):
   plt.title(title)
   plt.xlabel('My numbers')
   plt.ylabel('Count')   
-  fname = "_".join(title.split(" "))
+  fname = "%s___%s" % ("_".join(title.split(" ")), "hist")
   plt.savefig("%s.pdf" % fname)
   plt.close()
+
 
 def get_columns(f_name):
   cols = []
@@ -30,7 +66,7 @@ def get_columns(f_name):
     sys.exit(1)
 
   num_cols_list = list(set([ len(vals) for vals in cols ]))
-  if len(num_cols_list) > 0:
+  if len(num_cols_list) > 1:
     print("WARNING - some lines have unexpected values")
   num_cols = sorted(num_cols_list)[0]
 
@@ -50,7 +86,7 @@ def get_columns(f_name):
       # Skip any columns w/ just words
       continue
     
-    vals = [ val for val in col_vals if is_float(val) ]
+    vals = [ float(val) for val in col_vals if is_float(val) ]
     
     header_vals_list.append( [ header, vals ] ) 
 
@@ -65,22 +101,23 @@ def is_float(element: any) -> bool:
         return False
 
 if __name__ == '__main__':
-  '''
-  input_file example
-    mean,median,std
-    0.4814276023050369,0.4878048780487805,0.1284245675290927
-  '''
   if len(sys.argv) < 2:
-    print("Pass a file like below (Headers optional). Exiting...\n")
-    print("$ cat my_file.txt")
-    print("mean,median,std")
-    print("0.4814276023050369,0.4878048780487805,0.1284245675290927")
+    print("Pass a file. Exiting...")
     sys.exit(1)
 
   summary_file = sys.argv[1]
+  print("Input=%s" % summary_file)
+
+  print("\tProcessing...")
   header_vals_list = get_columns(summary_file)
+
+  print("\tGraphing...")
   for header_vals in header_vals_list:
     title = header_vals[0]
     list_of_nums = header_vals[1]
    
-    graph(list_of_nums, title)
+    graph_hist(list_of_nums, title)
+    graph_scatter(list_of_nums, title)
+    graph_scatter_aggregate(list_of_nums, title)
+
+  print("Done.")
