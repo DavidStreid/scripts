@@ -83,6 +83,7 @@ def get_columns(f_name):
     else:
       header = None
     if len(headers) == len(col_vals):
+      print("\t\tIgnoring column: '%s'" % headers[0])
       # Skip any columns w/ just words
       continue
     

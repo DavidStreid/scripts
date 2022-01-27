@@ -2,12 +2,13 @@
 # RUN
 ```
 $ cat my_file.txt
-mean,median,std
-0.4814276023050369,0.4878048780487805,0.1284245675290927
+mean,median,std,file
+0.4814276023050369,0.4878048780487805,0.1284245675290927,stat_file.txt
 ...
 $ python3 graph_alt_allele_summary.py my_file.txt
 Input=my_file.txt
 	Processing...
+		Ignoring column: 'file'
 	Graphing...
 Done.
 $ ls -1 *.pdf
