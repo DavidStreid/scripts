@@ -4,18 +4,24 @@ import matplotlib.pyplot as plt
 DELIMITER = ","
 
 
-def graph_scatter(list_of_nums, title):
-  idx_list = [ idx for idx in range(len(list_of_nums)) ]
-  plt.scatter(idx_list, list_of_nums)
-  plt.title(title)
-  plt.xlabel('idx')
-  plt.ylabel('val')
-  fname = "%s___%s" % ("_".join(title.split(" ")), "scatter")
+
+def graph_scatter(x_axis, y_axis, x_label, y_label, fname):
+  plt.scatter(x_axis, y_axis)
+  plt.title('%s vs. %s' % (y_label, x_label))
+  plt.xlabel(x_label)
+  plt.ylabel(y_label)
+
   plt.savefig("%s.pdf" % fname)
   plt.close()
 
 
-def graph_scatter_aggregate(list_of_nums, title):
+def graph_scatter_with_idx(list_of_nums, title):
+  idx_list = [ idx for idx in range(len(list_of_nums)) ]
+  fname = "%s___%s" % ("_".join(title.split(" ")), "scatter")
+  graph_scatter(idx_list, list_of_nums, 'idx', title, fname)
+
+
+def graph_scatter_count(list_of_nums, title):
   round_to = 3
   rounded = [ round(val, round_to) for val in list_of_nums ]
   counted_dic = {}
@@ -29,13 +35,9 @@ def graph_scatter_aggregate(list_of_nums, title):
   for val, ct in counted_dic.items():
     x.append(val)
     y.append(ct)
-  plt.scatter(x, y)
-  plt.title(title)
-  plt.xlabel('val')
-  plt.ylabel('ct')
+
   fname = "%s___%s" % ("_".join(title.split(" ")), "scatter_aggregate")
-  plt.savefig("%s.pdf" % fname)
-  plt.close()
+  graph_scatter(x, y, title, 'ct', fname)
 
 
 def graph_hist(list_of_nums, title):
@@ -83,9 +85,11 @@ def get_columns(f_name):
     else:
       header = None
     if len(headers) == len(col_vals):
-      print("\t\tIgnoring column: '%s'" % headers[0])
+      print("\t\tIgnoring column='%s'" % headers[0])
       # Skip any columns w/ just words
       continue
+    elif header is not None:
+      print("\t\tProcessing column=%s" % header)
     
     vals = [ float(val) for val in col_vals if is_float(val) ]
     
@@ -101,24 +105,49 @@ def is_float(element: any) -> bool:
     except ValueError:
         return False
 
+def graph_selected_axes(x_axis, y_axis, header_vals_list):
+  x_vals, y_vals = None, None
+
+  for header_vals in header_vals_list:
+    if header_vals[0] == x_axis:
+      x_vals = header_vals[1]
+    elif header_vals[0] == y_axis:
+      y_vals = header_vals[1]
+
+  if not x_vals or not y_vals:
+    print("\t\t[ERROR] Invalid - x_axis=%s y_axis=%s" % (x_axis, y_axis))
+  else:
+    fname = '%s vs %s' % (y_axis, x_axis)
+    graph_scatter(x_vals, y_vals, x_axis, y_axis, fname)
+
+
 if __name__ == '__main__':
   if len(sys.argv) < 2:
     print("Pass a file. Exiting...")
     sys.exit(1)
 
   summary_file = sys.argv[1]
+  x_axis, y_axis = None, None
+  if len(sys.argv) == 4:
+    x_axis = sys.argv[2]
+    y_axis = sys.argv[3]
   print("Input=%s" % summary_file)
 
   print("\tProcessing...")
   header_vals_list = get_columns(summary_file)
 
-  print("\tGraphing...")
-  for header_vals in header_vals_list:
-    title = header_vals[0]
-    list_of_nums = header_vals[1]
-   
-    graph_hist(list_of_nums, title)
-    graph_scatter(list_of_nums, title)
-    graph_scatter_aggregate(list_of_nums, title)
+  if x_axis and y_axis:
+    print("\tGraphing %s vs %s..." % (x_axis, y_axis))
+    graph_selected_axes(x_axis, y_axis, header_vals_list)
+  else:
+    print("\tGraphing all columns...")
+    for header_vals in header_vals_list:
+      title = header_vals[0]
+      list_of_nums = header_vals[1]
+     
+      graph_hist(list_of_nums, title)
+      graph_scatter_with_idx(list_of_nums, title)
+      graph_scatter_count(list_of_nums, title)
+
 
   print("Done.")
