@@ -9,6 +9,8 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 # Logistic Regression
 from sklearn.linear_model import LogisticRegression
+# For testing all possible feature combinations
+import itertools
 
 DELIMITER = ','
 
@@ -35,6 +37,12 @@ def train_svm(x, y):
   clf.fit(x,y)
 
   return clf
+
+def get_all_feature_combinations(feature_list):
+  combinations = []
+  for i in range(1,len(feature_list)+1):
+    combinations.extend(list(itertools.combinations(feature_list,i)))
+  return combinations
 
 def get_columns(f_name):
   cols = []
@@ -206,6 +214,21 @@ def run_predictions(x, y, x_test):
 
   return prediction_list
 
+def run_predictions_on_category_and_features(category, features, numerical_column_list, num_vals, test_numerical_column_list, test_num_vals, test_categorical_column_list):
+  out_file = f"{category}_predictions___{'_'.join(features)}.csv"
+  print("Training...")
+  category_idx, features_idx = get_feature_and_category_indices(numerical_column_list, category, features)
+  x, y = get_x_and_y(numerical_column_list, num_vals, features_idx, category_idx)
+
+  print("Extracting test set...")
+  features_idx = get_feature_indices(test_numerical_column_list, features)
+  x_test = get_x(test_numerical_column_list, test_num_vals, features_idx)
+
+  print("Running classifiers...")
+  prediction_list = run_predictions(x, y, x_test)
+
+  write_cols_to_file(test_categorical_column_list, test_numerical_column_list, prediction_list, out_file)
+
 if __name__ == '__main__':
   if len(sys.argv) < 2:
     print("Pass a file. Exiting...")
@@ -219,35 +242,31 @@ if __name__ == '__main__':
 
   print("Inputs")
   print("\tfile: %s" % training_file)
-  if len(sys.argv) > 4:
+  if len(sys.argv) > 3:
     category = sys.argv[3]
-    features = sys.argv[4:]
     print("\tcategory: %s" % category)
-    print("\tfeatures (num=%s): [ %s ]" % (len(features), ', '.join(features)))
+    features = sys.argv[4:]
+    if features:
+      print("\tfeatures (num=%s): [ %s ]" % (len(features), ', '.join(features)))
+    
 
   numerical_column_list, categorical_column_list, num_vals = get_columns(training_file)
   test_numerical_column_list, test_categorical_column_list, test_num_vals = get_columns(test_file)
 
   if category and features:
-    out_file = f"{category}_predictions___{'_'.join(features)}.csv"
-    print("Training...")
-    category_idx, features_idx = get_feature_and_category_indices(numerical_column_list, category, features)
-    x, y = get_x_and_y(numerical_column_list, num_vals, features_idx, category_idx)
-
-    print("Extracting test set...")
-    features_idx = get_feature_indices(test_numerical_column_list, features)
-    x_test = get_x(test_numerical_column_list, test_num_vals, features_idx)
-
-    print("Running classifiers...")
-    prediction_list = run_predictions(x, y, x_test)
-
-
-
-    write_cols_to_file(test_categorical_column_list, test_numerical_column_list, prediction_list, out_file)
-
+    run_predictions_on_category_and_features(category, features, numerical_column_list, num_vals, test_numerical_column_list, test_num_vals, test_categorical_column_list)
+  elif category and not features:
+    numerical_column_headers = set([ col[0] for col in numerical_column_list ])
+    test_numerical_column_headers = set([ col[0] for col in test_numerical_column_list ])
+    shared_headers = list(numerical_column_headers.intersection(test_numerical_column_headers))
+    feature_combinations = get_all_feature_combinations(shared_headers)
+    print(f"{len(shared_headers)} shared features. Testing {len(feature_combinations)} feature combinations...")
+    for feature_combo in feature_combinations:
+      run_predictions_on_category_and_features(category, feature_combo, numerical_column_list, num_vals, test_numerical_column_list, test_num_vals, test_categorical_column_list)
   else:
+    print(f"category='{category}' features='{features}'")
     # If only two files are passed - just get the columns that could be features/categories
     all_headers = [ val[0] for val in numerical_column_list ]
-    print("Possible feature columns\n\t%s" % '\n\t'.join(all_headers))
+    print("Possible feature columns\n\t%s" % '\n\t'.join(all_headers))  
 
   print("Done.\n")
