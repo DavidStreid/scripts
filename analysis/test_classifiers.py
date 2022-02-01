@@ -1,18 +1,33 @@
 from os import X_OK
 import sys
+# knn
 from sklearn.neighbors import KNeighborsClassifier
+# random forst
+from sklearn.ensemble import RandomForestClassifier
+# SVM
+from sklearn.svm import SVC
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
 
 DELIMITER = ','
 
-def train_knn(x, y):
-  # x = [[0], [1], [2], [3]]
-  # y = [0,0,1,1]
-  neigh = KNeighborsClassifier(n_neighbors=3)
+def train_knn(x, y, n_neighbors):
+  neigh = KNeighborsClassifier(n_neighbors=n_neighbors)
   neigh.fit(x, y)
 
   return neigh
 
+def tran_random_forest(x, y, max_depth):
+  clf = RandomForestClassifier(max_depth=max_depth, random_state=0)
+  clf.fit(x, y)
 
+  return clf
+
+def train_svm(x, y):
+  clf = make_pipeline(StandardScaler(), SVC(gamma='auto'))
+  clf.fit(x,y)
+
+  return clf
 
 def  get_columns(f_name):
   cols = []
@@ -136,6 +151,46 @@ def write_cols_to_file(header_vals_list):
       line = f"{','.join([ str(value[i]) for value in values ])}\n"
       out.write(line)
 
+def run_predictions(x, y, x_test, header_vals_list):
+  output_col_list = header_vals_list[:]
+
+  models = [
+    [ 'knn_5', train_knn(x, y, 5) ],
+    [ 'knn_4', train_knn(x, y, 4) ],
+    [ 'knn_3', train_knn(x, y, 3) ],
+    [ 'knn_2', train_knn(x, y, 2) ],
+    [ 'knn_1', train_knn(x, y, 1) ],
+    [ 'rf_1', tran_random_forest(x, y, 5) ],
+    [ 'rf_1', tran_random_forest(x, y, 4) ],
+    [ 'rf_1', tran_random_forest(x, y, 3) ],
+    [ 'rf_1', tran_random_forest(x, y, 2) ],
+    [ 'rf_1', tran_random_forest(x, y, 1) ],
+    [ 'svm', train_svm(x, y) ]
+  ]
+  
+  for model_pair in models:
+    model_label = model_pair[0]
+    model = model_pair[1]
+    predictions = []
+    prediction_report = {}
+    for x_t in x_test:
+      prediction = model.predict([x_t])
+      prediction_label = prediction[0]
+      predictions.append(prediction_label)
+
+      if prediction_label in prediction_report:
+        prediction_report[prediction_label] += 1
+      else:
+        prediction_report[prediction_label] = 1
+
+    print(f"[{model_label}] Classifications (n={len(x_test)})")
+    for k,v in prediction_report.items():
+      print(f'\t{k}: {v}')
+
+    prediction_col = [model_label, predictions]
+    output_col_list.append(prediction_col)
+
+  write_cols_to_file(output_col_list)
 
 if __name__ == '__main__':
   if len(sys.argv) < 2:
@@ -163,32 +218,14 @@ if __name__ == '__main__':
     print("Training...")
     category_idx, features_idx = get_feature_and_category_indices(header_vals_list, category, features)
     x, y = get_x_and_y(header_vals_list, num_vals, features_idx, category_idx)
-    knn_model = train_knn(x, y)
 
     print("Testing")
     features_idx = get_feature_indices(test_header_vals_list, features)
     x_test = get_x(test_header_vals_list, test_num_vals, features_idx)
 
-    
-    predictions = []
-    prediction_report = {}
-    for x_t in x_test:
-      prediction = knn_model.predict([x_t])
-      prediction_label = prediction[0]
-      predictions.append(prediction_label)
+    run_predictions(x, y, x_test, test_header_vals_list)
 
-      if prediction_label in prediction_report:
-        prediction_report[prediction_label] += 1
-      else:
-        prediction_report[prediction_label] = 1
 
-    print(f"Classifications (n={len(x_test)})")
-    for k,v in prediction_report.items():
-      print(f'\t{k}: {v}')
-
-    prediction_col = ['prediction', predictions]
-    test_header_vals_list.append(prediction_col)
-    write_cols_to_file(test_header_vals_list)
   else:
     all_headers = [ val[0] for val in header_vals_list ]
     print("Possible feature columns\n\t%s" % '\n\t'.join(all_headers))
