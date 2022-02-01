@@ -14,7 +14,7 @@ def train_knn(x, y):
 
 
 
-def get_columns(f_name):
+def  get_columns(f_name):
   cols = []
   with open(f_name, 'r') as summary_in:
     for line in summary_in:
@@ -74,7 +74,7 @@ def get_feature_indices(header_vals_list, features):
   features_idx = []
   for feature in features:
     if feature not in all_headers_set:
-      print("\t[ERROR] Invalid category column: %s" % category)
+      print("\t[ERROR] Invalid feature column: %s" % feature)
       valid_featuers = False
     else:
       features_idx.append(all_headers.index(feature))
@@ -122,6 +122,21 @@ def get_x_and_y(header_vals_list, num_vals, features_idx, category_idx):
   y = header_vals_list[category_idx][1]
   return x, y
 
+def write_cols_to_file(header_vals_list):
+  with open('predictions.csv', 'w') as out:
+    header = [ col[0] for col in header_vals_list ]
+    values = [ col[1] for col in header_vals_list ]
+
+    all_col_lengths = list(set([len(col_vals) for col_vals in values]))
+    if len(all_col_lengths) != 1:
+      print("[WARNING] Invalid number of input values - [ %s ]" % ', '.join([str(val) for val in all_col_lengths]))
+
+    out.write(f"{','.join(header)}\n")
+    for i in range(all_col_lengths[0]):
+      line = f"{','.join([ str(value[i]) for value in values ])}\n"
+      out.write(line)
+
+
 if __name__ == '__main__':
   if len(sys.argv) < 2:
     print("Pass a file. Exiting...")
@@ -152,15 +167,28 @@ if __name__ == '__main__':
 
     print("Testing")
     features_idx = get_feature_indices(test_header_vals_list, features)
-    x_test = get_x(header_vals_list, num_vals, features_idx)
+    x_test = get_x(test_header_vals_list, test_num_vals, features_idx)
 
+    
+    predictions = []
+    prediction_report = {}
     for x_t in x_test:
       prediction = knn_model.predict([x_t])
-      # TODO - log to file
-      print(prediction)
+      prediction_label = prediction[0]
+      predictions.append(prediction_label)
 
+      if prediction_label in prediction_report:
+        prediction_report[prediction_label] += 1
+      else:
+        prediction_report[prediction_label] = 1
 
-    # graph_selected_axes(x_axis, y_axis, header_vals_list)
+    print(f"Classifications (n={len(x_test)})")
+    for k,v in prediction_report.items():
+      print(f'\t{k}: {v}')
+
+    prediction_col = ['prediction', predictions]
+    test_header_vals_list.append(prediction_col)
+    write_cols_to_file(test_header_vals_list)
   else:
     all_headers = [ val[0] for val in header_vals_list ]
     print("Possible feature columns\n\t%s" % '\n\t'.join(all_headers))
