@@ -7,8 +7,16 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
+# Logistic Regression
+from sklearn.linear_model import LogisticRegression
 
 DELIMITER = ','
+
+
+def train_logistic_regression(x, y):
+  clf = LogisticRegression(random_state=0).fit(x, y)
+  
+  return clf
 
 def train_knn(x, y, n_neighbors):
   neigh = KNeighborsClassifier(n_neighbors=n_neighbors)
@@ -28,7 +36,7 @@ def train_svm(x, y):
 
   return clf
 
-def  get_columns(f_name):
+def get_columns(f_name):
   cols = []
   with open(f_name, 'r') as summary_in:
     for line in summary_in:
@@ -50,7 +58,9 @@ def  get_columns(f_name):
     l = [ line[col] for line in cols ]
     list_of_col_values.append(l)
 
-  header_vals_list = []
+  categorical_columns = []
+
+  numerical_columns = []
   for col_vals in list_of_col_values:
     headers = [ val for val in col_vals if not is_float(val) ]
     if len(headers) == 1:
@@ -58,18 +68,18 @@ def  get_columns(f_name):
     else:
       header = None
     if len(headers) == len(col_vals):
-      # Skip any columns w/ just words
-      continue
-    
-    vals = [ float(val) for val in col_vals if is_float(val) ]
-    header_vals_list.append( [ header, vals ] ) 
+      # Track columns w/ just words - won't be used for classification
+      categorical_columns.append([ col_vals[0], col_vals[1:] ])
+    else:
+      vals = [ float(val) for val in col_vals if is_float(val) ]
+      numerical_columns.append( [ header, vals ] ) 
 
-  val_len = set([ len(line[1]) for line in header_vals_list ])
+  val_len = set([ len(line[1]) for line in numerical_columns ])
   if len(val_len) != 1:
     print("\t[ERROR] - Invalid value columns")
     sys.exit(1)
 
-  return header_vals_list, list(val_len)[0]
+  return numerical_columns, categorical_columns, list(val_len)[0]
 
 def is_float(element: any) -> bool:
     # https://stackoverflow.com/a/20929881/3874247
@@ -136,8 +146,12 @@ def get_x_and_y(header_vals_list, num_vals, features_idx, category_idx):
   y = header_vals_list[category_idx][1]
   return x, y
 
-def write_cols_to_file(header_vals_list):
-  with open('predictions.csv', 'w') as out:
+def write_cols_to_file(categorical_columns, numerical_columns, prediction_columns, out_file):
+  header_vals_list = []
+  header_vals_list.extend(categorical_columns)
+  header_vals_list.extend(numerical_columns)
+  header_vals_list.extend(prediction_columns)
+  with open(out_file, 'w') as out:
     header = [ col[0] for col in header_vals_list ]
     values = [ col[1] for col in header_vals_list ]
 
@@ -150,8 +164,8 @@ def write_cols_to_file(header_vals_list):
       line = f"{','.join([ str(value[i]) for value in values ])}\n"
       out.write(line)
 
-def run_predictions(x, y, x_test, header_vals_list):
-  output_col_list = header_vals_list[:]
+def run_predictions(x, y, x_test):
+  prediction_list = []
 
   models = [
     [ 'knn_5', train_knn(x, y, 5) ],
@@ -164,7 +178,8 @@ def run_predictions(x, y, x_test, header_vals_list):
     [ 'rf_1', tran_random_forest(x, y, 3) ],
     [ 'rf_1', tran_random_forest(x, y, 2) ],
     [ 'rf_1', tran_random_forest(x, y, 1) ],
-    [ 'svm', train_svm(x, y) ]
+    [ 'svm', train_svm(x, y) ],
+    [ 'log_reg', train_logistic_regression(x, y) ]
   ]
   
   for model_pair in models:
@@ -187,9 +202,9 @@ def run_predictions(x, y, x_test, header_vals_list):
       print(f'\t\t{k}: {v}')
 
     prediction_col = [model_label, predictions]
-    output_col_list.append(prediction_col)
+    prediction_list.append(prediction_col)
 
-  write_cols_to_file(output_col_list)
+  return prediction_list
 
 if __name__ == '__main__':
   if len(sys.argv) < 2:
@@ -210,24 +225,29 @@ if __name__ == '__main__':
     print("\tcategory: %s" % category)
     print("\tfeatures (num=%s): [ %s ]" % (len(features), ', '.join(features)))
 
-  header_vals_list, num_vals = get_columns(training_file)
-  test_header_vals_list, test_num_vals = get_columns(test_file)
+  numerical_column_list, categorical_column_list, num_vals = get_columns(training_file)
+  test_numerical_column_list, test_categorical_column_list, test_num_vals = get_columns(test_file)
 
   if category and features:
+    out_file = f"{category}_predictions___{'_'.join(features)}.csv"
     print("Training...")
-    category_idx, features_idx = get_feature_and_category_indices(header_vals_list, category, features)
-    x, y = get_x_and_y(header_vals_list, num_vals, features_idx, category_idx)
+    category_idx, features_idx = get_feature_and_category_indices(numerical_column_list, category, features)
+    x, y = get_x_and_y(numerical_column_list, num_vals, features_idx, category_idx)
 
     print("Extracting test set...")
-    features_idx = get_feature_indices(test_header_vals_list, features)
-    x_test = get_x(test_header_vals_list, test_num_vals, features_idx)
+    features_idx = get_feature_indices(test_numerical_column_list, features)
+    x_test = get_x(test_numerical_column_list, test_num_vals, features_idx)
 
     print("Running classifiers...")
-    run_predictions(x, y, x_test, test_header_vals_list)
+    prediction_list = run_predictions(x, y, x_test)
+
+
+
+    write_cols_to_file(test_categorical_column_list, test_numerical_column_list, prediction_list, out_file)
 
   else:
     # If only two files are passed - just get the columns that could be features/categories
-    all_headers = [ val[0] for val in header_vals_list ]
+    all_headers = [ val[0] for val in numerical_column_list ]
     print("Possible feature columns\n\t%s" % '\n\t'.join(all_headers))
 
   print("Done.\n")
