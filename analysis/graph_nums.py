@@ -117,9 +117,10 @@ def graph_selected_axes(x_axis, y_axis, header_vals_list):
   if not x_vals or not y_vals:
     print("\t\t[ERROR] Invalid - x_axis=%s y_axis=%s" % (x_axis, y_axis))
   else:
-    fname = '%s vs %s' % (y_axis, x_axis)
+    fname = '%s_vs_%s' % (y_axis, x_axis)
     graph_scatter(x_vals, y_vals, x_axis, y_axis, fname)
-
+    fname = '%s_vs_%s' % (x_axis, y_axis)
+    graph_scatter(y_vals, x_vals, y_axis, x_axis, fname) # Graph both ways
 
 if __name__ == '__main__':
   if len(sys.argv) < 2:
