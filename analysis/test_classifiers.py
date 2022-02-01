@@ -1,4 +1,3 @@
-from os import X_OK
 import sys
 # knn
 from sklearn.neighbors import KNeighborsClassifier
