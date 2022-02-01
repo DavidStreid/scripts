@@ -58,7 +58,7 @@ $ python3 ../test_classifiers.py training.csv test_set.csv category
   > ...
   > ```
 
-### Run classifiers
+### Run grapher
 ```
 $ python3 graph_alt_allele_summary.py my_file.txt
 Input=my_file.txt
