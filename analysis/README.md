@@ -6,8 +6,8 @@ $ cat ~/.bash_profile
 alias graph_csv='python3 PATH/TO/scripts/analysis/graph_nums.py'
 alias classify='python3 PATH/TO/scripts/analysis/test_classifiers.py'
 
-$ graph_csv training.csv				# Graph all features alone
-$ classify training.csv test.csv category		# Test KNN, Random-forest, svm, logitstic regression on training
+$ graph_csv training.csv			# Graph all features alone
+$ classify training.csv test.csv category	# Test KNN, Random-forest, svm, logitstic regression on training
 ```
 
 ## Test classifiers
