@@ -182,9 +182,9 @@ def run_predictions(x, y, x_test, header_vals_list):
       else:
         prediction_report[prediction_label] = 1
 
-    print(f"[{model_label}] Classifications (n={len(x_test)})")
+    print(f"\t[{model_label}] Classifications (n={len(x_test)})")
     for k,v in prediction_report.items():
-      print(f'\t{k}: {v}')
+      print(f'\t\t{k}: {v}')
 
     prediction_col = [model_label, predictions]
     output_col_list.append(prediction_col)
@@ -202,7 +202,7 @@ if __name__ == '__main__':
   category = None
   features = None
 
-  print("inputs")
+  print("Inputs")
   print("\tfile: %s" % training_file)
   if len(sys.argv) > 4:
     category = sys.argv[3]
@@ -218,15 +218,16 @@ if __name__ == '__main__':
     category_idx, features_idx = get_feature_and_category_indices(header_vals_list, category, features)
     x, y = get_x_and_y(header_vals_list, num_vals, features_idx, category_idx)
 
-    print("Testing")
+    print("Extracting test set...")
     features_idx = get_feature_indices(test_header_vals_list, features)
     x_test = get_x(test_header_vals_list, test_num_vals, features_idx)
 
+    print("Running classifiers...")
     run_predictions(x, y, x_test, test_header_vals_list)
 
-
   else:
+    # If only two files are passed - just get the columns that could be features/categories
     all_headers = [ val[0] for val in header_vals_list ]
     print("Possible feature columns\n\t%s" % '\n\t'.join(all_headers))
 
-  print("Done.")
+  print("Done.\n")
