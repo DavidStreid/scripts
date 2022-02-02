@@ -1,3 +1,5 @@
+import argparse
+from os.path import exists
 import sys
 # knn
 from sklearn.neighbors import KNeighborsClassifier
@@ -127,7 +129,7 @@ def get_feature_and_category_indices(header_vals_list, category, features):
   features_idx = []
   for feature in features:
     if feature not in all_headers_set:
-      print("\t[ERROR] Invalid category column: %s" % category)
+      print("\t[ERROR] Invalid feature column: %s" % feature)
       valid_featuers = False
     else:
       features_idx.append(all_headers.index(feature))
@@ -172,7 +174,7 @@ def write_cols_to_file(categorical_columns, numerical_columns, prediction_column
       line = f"{','.join([ str(value[i]) for value in values ])}\n"
       out.write(line)
 
-def run_predictions(x, y, x_test):
+def run_predictions(x, y, x_test, expected_dic, wiggle):
   prediction_list = []
 
   models = [
@@ -190,6 +192,9 @@ def run_predictions(x, y, x_test):
     [ 'log_reg', train_logistic_regression(x, y) ]
   ]
   
+  if expected_dic:
+    print(f"\tOnly printing classifiers that have the following counts (+/- {wiggle}) - {expected_dic}")
+
   for model_pair in models:
     model_label = model_pair[0]
     model = model_pair[1]
@@ -205,68 +210,152 @@ def run_predictions(x, y, x_test):
       else:
         prediction_report[prediction_label] = 1
 
-    print(f"\t[{model_label}] Classifications (n={len(x_test)})")
-    for k,v in prediction_report.items():
-      print(f'\t\t{k}: {v}')
+    if expected_dic:
+      if is_expected(expected_dic, prediction_report, wiggle):
+        print(f"\t\tSUCCESS - [{model_label}] Classifications (n={len(x_test)})")
+      else:
+        continue
+    else:
+      print(f"\t[{model_label}] Classifications (n={len(x_test)})")
+      for k,v in prediction_report.items():
+        print(f'\t\t{k}: {v}')
 
     prediction_col = [model_label, predictions]
     prediction_list.append(prediction_col)
 
   return prediction_list
 
-def run_predictions_on_category_and_features(category, features, numerical_column_list, num_vals, test_numerical_column_list, test_num_vals, test_categorical_column_list):
+
+def is_expected(expected_dic, prediction_report, wiggle):
+  prediction_report_keys = set([ str(key) for key in list(prediction_report.keys()) ])
+
+  # Check that everything in the expected dic will be checked by iterating over the shared keys
+  for expected_category, expected_count in expected_dic.items():
+    if expected_category not in prediction_report_keys and expected_count != 0:
+      # labels that aren't assigned won't be present in the prediction report - if 0 is expected, then it not being present is ok
+      return False
+  for category, count in prediction_report.items():
+    key = str(category)
+    if key in expected_dic:
+      # It's ok for the expected dic to not have a key - the dic can mention as many or a few keys as desired
+      min = count - wiggle
+      max = count + wiggle
+      if expected_dic[key] < min or expected_dic[key] > max:
+        # Get range around which the actual value is allowed
+        return False
+
+  return True
+
+def run_predictions_on_category_and_features(category, features, numerical_column_list, num_vals, test_numerical_column_list, test_num_vals, test_categorical_column_list, expected_dic, wiggle):
   out_file = f"{category}_predictions___{'_'.join(features)}.csv"
-  print("Training...")
+  # print("Training...")
   category_idx, features_idx = get_feature_and_category_indices(numerical_column_list, category, features)
   x, y = get_x_and_y(numerical_column_list, num_vals, features_idx, category_idx)
 
-  print("Extracting test set...")
+  # print("Extracting test set...")
   features_idx = get_feature_indices(test_numerical_column_list, features)
   x_test = get_x(test_numerical_column_list, test_num_vals, features_idx)
 
-  print("Running classifiers...")
-  prediction_list = run_predictions(x, y, x_test)
+  # print("Running classifiers...")
+  prediction_list = run_predictions(x, y, x_test, expected_dic, wiggle)
 
-  write_cols_to_file(test_categorical_column_list, test_numerical_column_list, prediction_list, out_file)
+  if len(prediction_list) > 0:
+    write_cols_to_file(test_categorical_column_list, test_numerical_column_list, prediction_list, out_file)
 
-if __name__ == '__main__':
-  if len(sys.argv) < 2:
-    print("Pass a file. Exiting...")
+def validate_inputs(training_file, test_file, category, features, expected_counts, wiggle):
+  errors = []
+  if not exists(training_file):
+    errors.append(f'Invalid training file: {training_file}')
+  if not exists(test_file):
+    errors.append(f'Invalid test file: {training_file}')
+  if features is not None and category is None:
+    errors.append('Define category column for features')
+  if expected_counts is not None:
+    if features is None or category is None:
+      errors.append('Define category/feature column(s)')
+    dic = get_expected_dictionary(expected_counts)
+    if len(dic) == 0:
+      errors.append(f"Invalid format for expected_counts, e.g. 'k1:v1,k2:v2' where all v* are ints: {expected_counts}")
+  if wiggle is not None:
+    if not wiggle.isnumeric():
+      errors.append(f"Wiggle parameter should be an integer. Got {wiggle}")
+  if len(errors) > 0:
+    print("ERRORS")
+    for err in errors:
+      print(f'\t{err}')
     sys.exit(1)
 
-  training_file = sys.argv[1]
-  test_file = sys.argv[2]
 
-  category = None
-  features = None
+
+
+def get_expected_dictionary(expected_counts):
+  dic = {}
+  category_count_list = expected_counts.split(',')
+  for cat_ct in category_count_list:
+    cat_ct_pair = cat_ct.split(':')
+    if len(cat_ct_pair) != 2:
+      return {}
+    [category, count] = cat_ct_pair
+    if not count.isnumeric():
+      return {}
+    dic[category] = int(count)
+  return dic
+
+if __name__ == '__main__':
+  parser = argparse.ArgumentParser(description='Teset classifiers')
+  parser.add_argument('-tr', dest='training_file', help='training file - features & categories (.csv)', required=True)
+  parser.add_argument('-ts', dest='test_file', help='test file - features (.csv)', required=True)
+  parser.add_argument('-c', dest='category', help='exact text of category column in training & test file', default=None)
+  parser.add_argument('-f', dest='features', help='exact text of category column in training & test file', default=None)
+  parser.add_argument('-e', dest='expected_counts', help='comma-separated key:value pairs of expected number of categorized entries, e.g. "label1:count,label2:count"', default=None)
+  parser.add_argument('-w', dest='wiggle', help='range around each expected count allowed', default='0')
+
+  args = parser.parse_args()
+  training_file = args.training_file
+  test_file = args.test_file
+  category = args.category
+  features = args.features
+  expected_counts = args.expected_counts
+  wiggle = args.wiggle
+
+  validate_inputs(training_file, test_file, category, features, expected_counts, wiggle)
 
   print("Inputs")
-  print("\tfile: %s" % training_file)
-  if len(sys.argv) > 3:
-    category = sys.argv[3]
+  print("\ttrain: %s" % training_file)
+  print("\ttest: %s" % test_file)
+  if category is not None:
     print("\tcategory: %s" % category)
-    features = sys.argv[4:]
-    if features:
-      print("\tfeatures (num=%s): [ %s ]" % (len(features), ', '.join(features)))
+  feature_list = None
+  if features is not None:
+    feature_list = sorted(features.split(" "))
+    print("\tfeatures (num=%s): [ %s ]" % (len(feature_list), ', '.join(feature_list)))
+  expected_dic = None
+  if expected_counts is not None:
+    expected_dic = get_expected_dictionary(expected_counts)
+    print(f"\texpected: {expected_dic}")
+  if wiggle is not None:
+    wiggle = int(wiggle)
+    print(f"\twiggle: +/-{wiggle}")
     
-
   numerical_column_list, categorical_column_list, num_vals = get_columns(training_file)
   test_numerical_column_list, test_categorical_column_list, test_num_vals = get_columns(test_file)
 
-  if category and features:
-    run_predictions_on_category_and_features(category, features, numerical_column_list, num_vals, test_numerical_column_list, test_num_vals, test_categorical_column_list)
-  elif category and not features:
+  if category and feature_list:
+    run_predictions_on_category_and_features(category, feature_list, numerical_column_list, num_vals, test_numerical_column_list, test_num_vals, test_categorical_column_list, expected_dic, wiggle)
+  elif category and not feature_list:
     numerical_column_headers = set([ col[0] for col in numerical_column_list ])
     test_numerical_column_headers = set([ col[0] for col in test_numerical_column_list ])
     shared_headers = list(numerical_column_headers.intersection(test_numerical_column_headers))
     feature_combinations = get_all_feature_combinations(shared_headers)
     print(f"{len(shared_headers)} shared features. Testing {len(feature_combinations)} feature combinations...")
     for feature_combo in feature_combinations:
-      run_predictions_on_category_and_features(category, feature_combo, numerical_column_list, num_vals, test_numerical_column_list, test_num_vals, test_categorical_column_list)
+      run_predictions_on_category_and_features(category, feature_combo, numerical_column_list, num_vals, test_numerical_column_list, test_num_vals, test_categorical_column_list, expected_dic, wiggle)
   else:
-    print(f"category='{category}' features='{features}'")
     # If only two files are passed - just get the columns that could be features/categories
-    all_headers = [ val[0] for val in numerical_column_list ]
-    print("Possible feature columns\n\t%s" % '\n\t'.join(all_headers))  
+    all_train_headers = set([ val[0] for val in numerical_column_list ])
+    all_test_headers = set([ val[0] for val in test_numerical_column_list ])
+
+    shared_headers = list(all_train_headers.intersection(all_test_headers))
+    print("Possible feature columns\n\t%s" % '\n\t'.join(shared_headers))  
 
   print("Done.\n")
