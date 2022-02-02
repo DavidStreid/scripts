@@ -10,7 +10,7 @@ $ graph_csv training.csv			# Graph all features alone
 $ classify training.csv test.csv category	# Test KNN, Random-forest, svm, logitstic regression on training
 ```
 
-## Test classifiers
+## Test classifiers (`test_classifiers.py`)
 ### Inputs
 * `training file`: `*.csv` (required), comma-separated file containing features and label
   > ``` 
@@ -48,7 +48,7 @@ $ python3 ../test_classifiers.py training.csv test_set.csv category
 ```
 
 
-## Graph Numbers
+## Graph Numbers (`graph_nums.py`)
 ### Inputs
 * `test file`: `*.csv` (required) - comma-separated file w/ features 
   > ``` 
