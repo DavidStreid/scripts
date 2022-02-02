@@ -313,8 +313,8 @@ if __name__ == '__main__':
   args = parser.parse_args()
   training_file = args.training_file
   test_file = args.test_file
-  category = args.category
-  features = args.features
+  category = args.category.strip()
+  features = args.features.strip()
   expected_counts = args.expected_counts
   wiggle = args.wiggle
 
