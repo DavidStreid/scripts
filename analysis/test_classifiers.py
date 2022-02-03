@@ -43,9 +43,12 @@ def train_svm(x, y):
 def get_all_feature_combinations(feature_list, category):
   combinations = []
   for i in range(1,len(feature_list)+1):
-    combo_list = list(itertools.combinations(feature_list,i))
-    if category in combo_list:
-      combo_list.remove(category)
+    combo = list(itertools.combinations(feature_list,i))
+    combo_list = []
+    # Get combo_list from list of tuples - minus category if it is present
+    for val in combo:
+      if val[0] != category:
+        combo_list.append(val)
     if len(combo_list) > 0:
       combinations.extend(combo_list)
   return combinations
@@ -54,8 +57,7 @@ def get_columns(f_name):
   cols = []
   with open(f_name, 'r') as summary_in:
     for line in summary_in:
-      cleaned = line.strip()
-      vals = cleaned.split(DELIMITER)
+      vals = line.strip().split(DELIMITER)
       cols.append(vals)
 
   if len(cols) == 0:
@@ -275,7 +277,7 @@ def validate_inputs(training_file, test_file, category, features, expected_count
   if features is not None and category is None:
     errors.append('Define category column for features')
   if expected_counts is not None:
-    if features is None or category is None:
+    if features is None and category is None:
       errors.append('Define category/feature column(s)')
     dic = get_expected_dictionary(expected_counts)
     if len(dic) == 0:
@@ -358,8 +360,9 @@ if __name__ == '__main__':
     test_numerical_column_headers = set([ col[0] for col in test_numerical_column_list ])
     shared_headers = list(numerical_column_headers.intersection(test_numerical_column_headers))
     feature_combinations = get_all_feature_combinations(shared_headers, category)
-    print(f"{len(shared_headers)} shared features. Testing {len(feature_combinations)} feature combinations...")
+    print(f"Testing Classifiers - {len(shared_headers)} shared features. Testing {len(feature_combinations)} feature combinations...")
     for feature_combo in feature_combinations:
+      print("\tfeatures (num=%s): [ %s ]" % (len(feature_combo), ', '.join(feature_combo)))
       run_predictions_on_category_and_features(category, feature_combo, numerical_column_list, num_vals, test_numerical_column_list, test_num_vals, test_categorical_column_list, expected_dic, wiggle)
   else:
     # If only two files are passed - just get the columns that could be features/categories
