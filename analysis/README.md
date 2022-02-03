@@ -35,28 +35,31 @@ $ classify training.csv test.csv category	# Test KNN, Random-forest, svm, logits
   > Eg: `f1 f2`
 
 ### Run classifiers
+**[1] Show all columns - don't test any classifiers**
 ```
-# [1] Show all columns - don't test any classifiers
 $ python3 test_classifiers.py \
     -tr ${training_csv} \
     -ts ${test_csv} 
-
-# [2] Test classifiers w/ "category" as the label and "f1" & "f2" as the features
+```
+**[2] Test classifiers w/ "category" as the label and "f1" & "f2" as the features**
+```
 $ python3 test_classifiers.py \
     -tr ${training_csv} \
     -ts ${test_csv} \
     -f "f1 f2" \
     -c category
-
-# [3] Same as 2, but only print classifiers that label 1 entry as "0", 3 entries as "1", and 5 entries as "2"
+```
+**[3] Same as 2, but only print classifiers that label 1 entry as "0", 3 entries as "1", and 5 entries as "2"**
+```
 $ python3 test_classifiers.py \
     -tr ${training_csv} \
     -ts ${test_csv} \
     -f "f1 f2" \
     -c category \
     -e "0:1,1:3,2:5"
-
-# [4] 3 but w/ wiggle - only print classifiers that label 0-2 entries as "0", 2-4 entries as "1", and 4-6 entries as "2"
+```
+**[4] 3 but w/ wiggle - only print classifiers that label 0-2 entries as "0", 2-4 entries as "1", and 4-6 entries as "2"**
+```
 $ python3 test_classifiers.py \
     -tr ${training_csv} \
     -ts ${test_csv} \
@@ -64,14 +67,14 @@ $ python3 test_classifiers.py \
     -c category \
     -e "1:3,2:5" \
     -w 1 \
-
-# [5] Test all classifiers on labelling `category` column w/ all possible combinations of features shared between `training_csv` and `test_csv`
+```
+**[5] Test all classifiers on labelling `category` column w/ all possible combinations of features shared between `training_csv` and `test_csv`**
+```
 $ python3 test_classifiers.py \
     -tr ${training_csv} \
     -ts ${test_csv} \
     -c category
 ```
-
 
 ## Graph Numbers (`graph_nums.py`)
 ### Inputs
