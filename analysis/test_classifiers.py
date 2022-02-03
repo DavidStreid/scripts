@@ -162,7 +162,7 @@ def get_x_and_y(header_vals_list, num_vals, features_idx, category_idx):
   y = header_vals_list[category_idx][1]
   return x, y
 
-def write_cols_to_file(categorical_columns, numerical_columns, prediction_columns, out_file):
+def write_cols_to_file(categorical_columns, numerical_columns, prediction_columns, out_file, features, summary_file):
   header_vals_list = []
   header_vals_list.extend(categorical_columns)
   header_vals_list.extend(numerical_columns)
@@ -179,6 +179,23 @@ def write_cols_to_file(categorical_columns, numerical_columns, prediction_column
     for i in range(all_col_lengths[0]):
       line = f"{','.join([ str(value[i]) for value in values ])}\n"
       out.write(line)
+
+  prediction_summary = []
+  for prediction in prediction_columns:
+    classifier = prediction[0]
+    labels = prediction[1]
+    label_dic = {}
+    for label in labels:
+      if label in label_dic:
+        label_dic[label] += 1
+      else:
+        label_dic[label] = 1
+    line = f"{classifier},{' '.join(features)},{str(label_dic)}"
+    prediction_summary.append(line)
+  prediction_summary_contents = '\n'.join(prediction_summary)
+  with open(summary_file, 'a') as summary_out:
+    summary_out.write(prediction_summary_contents + "\n")
+
 
 def run_predictions(x, y, x_test, expected_dic, wiggle):
   prediction_list = []
@@ -252,7 +269,7 @@ def is_expected(expected_dic, prediction_report, wiggle):
 
   return True
 
-def run_predictions_on_category_and_features(category, features, numerical_column_list, num_vals, test_numerical_column_list, test_num_vals, test_categorical_column_list, expected_dic, wiggle):
+def run_predictions_on_category_and_features(category, features, numerical_column_list, num_vals, test_numerical_column_list, test_num_vals, test_categorical_column_list, expected_dic, wiggle, prediction_summary_file):
   out_file = f"{category}_predictions___{'_'.join(features)}.csv"
   # print("Training...")
   category_idx, features_idx = get_feature_and_category_indices(numerical_column_list, category, features)
@@ -266,7 +283,7 @@ def run_predictions_on_category_and_features(category, features, numerical_colum
   prediction_list = run_predictions(x, y, x_test, expected_dic, wiggle)
 
   if len(prediction_list) > 0:
-    write_cols_to_file(test_categorical_column_list, test_numerical_column_list, prediction_list, out_file)
+    write_cols_to_file(test_categorical_column_list, test_numerical_column_list, prediction_list, out_file, features, prediction_summary_file)
 
 def validate_inputs(training_file, test_file, category, features, expected_counts, wiggle):
   errors = []
@@ -315,6 +332,7 @@ if __name__ == '__main__':
   parser.add_argument('-f', dest='features', help='exact text of category column in training & test file', default=None)
   parser.add_argument('-e', dest='expected_counts', help='comma-separated key:value pairs of expected number of categorized entries, e.g. "label1:count,label2:count"', default=None)
   parser.add_argument('-w', dest='wiggle', help='range around each expected count allowed', default='0')
+  parser.add_argument('-s', dest='prediction_summary_file', help='summary file of predictions', default='summary.csv')
 
   args = parser.parse_args()
   training_file = args.training_file
@@ -323,6 +341,7 @@ if __name__ == '__main__':
   features = args.features
   expected_counts = args.expected_counts
   wiggle = args.wiggle
+  prediction_summary_file = args.prediction_summary_file
 
   validate_inputs(training_file, test_file, category, features, expected_counts, wiggle)
 
@@ -349,12 +368,12 @@ if __name__ == '__main__':
   if wiggle is not None:
     wiggle = int(wiggle)
     print(f"\twiggle: +/-{wiggle}")
-    
+  print(f"Outputs\n\t{prediction_summary_file}")
   numerical_column_list, categorical_column_list, num_vals = get_columns(training_file)
   test_numerical_column_list, test_categorical_column_list, test_num_vals = get_columns(test_file)
 
   if category is not None and feature_list is not None:
-    run_predictions_on_category_and_features(category, feature_list, numerical_column_list, num_vals, test_numerical_column_list, test_num_vals, test_categorical_column_list, expected_dic, wiggle)
+    run_predictions_on_category_and_features(category, feature_list, numerical_column_list, num_vals, test_numerical_column_list, test_num_vals, test_categorical_column_list, expected_dic, wiggle, prediction_summary_file)
   elif category and feature_list is None:
     numerical_column_headers = set([ col[0] for col in numerical_column_list ])
     test_numerical_column_headers = set([ col[0] for col in test_numerical_column_list ])
@@ -363,7 +382,7 @@ if __name__ == '__main__':
     print(f"Testing Classifiers - {len(shared_headers)} shared features. Testing {len(feature_combinations)} feature combinations...")
     for feature_combo in feature_combinations:
       print("\tfeatures (num=%s): [ %s ]" % (len(feature_combo), ', '.join(feature_combo)))
-      run_predictions_on_category_and_features(category, feature_combo, numerical_column_list, num_vals, test_numerical_column_list, test_num_vals, test_categorical_column_list, expected_dic, wiggle)
+      run_predictions_on_category_and_features(category, feature_combo, numerical_column_list, num_vals, test_numerical_column_list, test_num_vals, test_categorical_column_list, expected_dic, wiggle, prediction_summary_file)
   else:
     # If only two files are passed - just get the columns that could be features/categories
     all_train_headers = set([ val[0] for val in numerical_column_list ])
