@@ -40,10 +40,14 @@ def train_svm(x, y):
 
   return clf
 
-def get_all_feature_combinations(feature_list):
+def get_all_feature_combinations(feature_list, category):
   combinations = []
   for i in range(1,len(feature_list)+1):
-    combinations.extend(list(itertools.combinations(feature_list,i)))
+    combo_list = list(itertools.combinations(feature_list,i))
+    if category in combo_list:
+      combo_list.remove(category)
+    if len(combo_list) > 0:
+      combinations.extend(combo_list)
   return combinations
 
 def get_columns(f_name):
@@ -313,8 +317,8 @@ if __name__ == '__main__':
   args = parser.parse_args()
   training_file = args.training_file
   test_file = args.test_file
-  category = args.category.strip()
-  features = args.features.strip()
+  category = args.category
+  features = args.features
   expected_counts = args.expected_counts
   wiggle = args.wiggle
 
@@ -324,10 +328,17 @@ if __name__ == '__main__':
   print("\ttrain: %s" % training_file)
   print("\ttest: %s" % test_file)
   if category is not None:
+    category = category.strip()
     print("\tcategory: %s" % category)
   feature_list = None
   if features is not None:
-    feature_list = sorted(features.split(" "))
+    feature_list = sorted(features.strip().split(" "))
+    if category in feature_list:
+      print(f"\t[WARNING] category='{category}' will be removed from features='{features}'")
+      feature_list.remove(category)
+      if len(feature_list) == 0:
+        print("\t[ERROR] No remaining features - exiting.")
+        sys.exit(1)
     print("\tfeatures (num=%s): [ %s ]" % (len(feature_list), ', '.join(feature_list)))
   expected_dic = None
   if expected_counts is not None:
@@ -340,13 +351,13 @@ if __name__ == '__main__':
   numerical_column_list, categorical_column_list, num_vals = get_columns(training_file)
   test_numerical_column_list, test_categorical_column_list, test_num_vals = get_columns(test_file)
 
-  if category and feature_list:
+  if category is not None and feature_list is not None:
     run_predictions_on_category_and_features(category, feature_list, numerical_column_list, num_vals, test_numerical_column_list, test_num_vals, test_categorical_column_list, expected_dic, wiggle)
-  elif category and not feature_list:
+  elif category and feature_list is None:
     numerical_column_headers = set([ col[0] for col in numerical_column_list ])
     test_numerical_column_headers = set([ col[0] for col in test_numerical_column_list ])
     shared_headers = list(numerical_column_headers.intersection(test_numerical_column_headers))
-    feature_combinations = get_all_feature_combinations(shared_headers)
+    feature_combinations = get_all_feature_combinations(shared_headers, category)
     print(f"{len(shared_headers)} shared features. Testing {len(feature_combinations)} feature combinations...")
     for feature_combo in feature_combinations:
       run_predictions_on_category_and_features(category, feature_combo, numerical_column_list, num_vals, test_numerical_column_list, test_num_vals, test_categorical_column_list, expected_dic, wiggle)
