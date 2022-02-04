@@ -1,10 +1,10 @@
 import sys
+from os.path import exists
 import matplotlib.pyplot as plt
 import math
+import argparse
 
 DELIMITER = ","
-
-
 
 def graph_scatter(x_axis, y_axis, x_label, y_label, fname):
   plt.scatter(x_axis, y_axis)
@@ -105,11 +105,11 @@ def get_columns(f_name):
     else:
       header = None
     if len(headers) == len(col_vals):
-      print("\t\tIgnoring column='%s'" % headers[0])
+      print("\tIgnoring column='%s'" % headers[0])
       # Skip any columns w/ just words
       continue
     elif header is not None:
-      print("\t\tProcessing column=%s" % header)
+      print("\tProcessing column=%s" % header)
     
     vals = [ float(val) for val in col_vals if is_float(val) ]
     
@@ -139,33 +139,70 @@ def graph_selected_axes(x_axis, y_axis, header_vals_list):
   else:
     fname = '%s_vs_%s' % (y_axis, x_axis)
     graph_scatter(x_vals, y_vals, x_axis, y_axis, fname)
-    fname = '%s_vs_%s' % (x_axis, y_axis)
-    graph_scatter(y_vals, x_vals, y_axis, x_axis, fname) # Graph both ways
 
-if __name__ == '__main__':
-  if len(sys.argv) < 2:
-    print("Pass a file. Exiting...")
+
+def validate_inputs(summary_file, x_axis, y_axis, columns, all_headers_set):
+  errors = []
+  if not exists(summary_file):
+    errors.append(f'Invalid csv: {summary_file}')
+  if (x_axis or y_axis) and not (x_axis and y_axis):
+    errors.append(f'Both x & y columns need to be provided to comare: x="{x_axis}" y="{y_axis}"')
+  if columns:
+    for column in columns:
+      if column not in all_headers_set:
+        errors.append(f'column={column} is not in the header of the csv')
+    
+  if len(errors) > 0:
+    print("ERRORS")
+    for err in errors:
+      print(f'\t{err}')
     sys.exit(1)
 
-  summary_file = sys.argv[1]
-  x_axis, y_axis = None, None
-  if len(sys.argv) == 4:
-    x_axis = sys.argv[2]
-    y_axis = sys.argv[3]
-  print("Input=%s" % summary_file)
 
-  print("\tProcessing...")
+if __name__ == '__main__':
+  parser = argparse.ArgumentParser(description='Graph CSV file')
+  parser.add_argument('-f', dest='input_file', help='comma-separated file', required=True)
+  parser.add_argument('-x', dest='x_axis', help='x_axis column (must provide -y)', default=None)
+  parser.add_argument('-y', dest='y_axis', help='y_axis column (must provide -x)', default=None)
+  parser.add_argument('-c', dest='columns', help='specific columns in file to graph', default=None)
+
+  args = parser.parse_args()
+  summary_file = args.input_file
+  x_axis = args.x_axis
+  y_axis = args.y_axis
+  columns = args.columns
+
+  print("Inputs")
+  print(f"\tcsv={summary_file}")
+  if x_axis:
+    print(f"\tx='{x_axis}'")
+  if y_axis:
+    print(f"\tx='{y_axis}'")
+  if columns:
+    print(f"\tcolumms='{columns}'")
+    columns = columns.strip().split(" ")
+  else:
+    print("\tcolumns=[all]")
+
+
+  print("Processing...")
   header_vals_list = get_columns(summary_file)
+  all_headers = set([hv[0] for hv in header_vals_list])
+  validate_inputs(summary_file, x_axis, y_axis, columns, all_headers)
 
+  print("Graphing...")
   if x_axis and y_axis:
-    print("\tGraphing %s vs %s..." % (x_axis, y_axis))
+    print("\t[graph] %s vs %s..." % (x_axis, y_axis))
     graph_selected_axes(x_axis, y_axis, header_vals_list)
   else:
-    print("\tGraphing all columns...")
     for header_vals in header_vals_list:
+      if columns:
+        if header_vals[0] not in columns:
+          continue
+      
       column = header_vals[0]
       list_of_nums = header_vals[1]
-
+      print(f"\t[graph] {column}")
       num_vals = len(list_of_nums)
 
       title = f'{column}_n{num_vals}'
