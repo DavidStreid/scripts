@@ -1,5 +1,6 @@
 import sys
 import matplotlib.pyplot as plt
+import math
 
 DELIMITER = ","
 
@@ -37,7 +38,26 @@ def graph_scatter_count(list_of_nums, title):
     y.append(ct)
 
   fname = "%s___%s" % ("_".join(title.split(" ")), "scatter_aggregate")
-  graph_scatter(x, y, title, 'ct', fname)
+  graph_scatter(x, y, title, 'count', fname)
+
+
+def graph_scatter_count_nl(list_of_nums, title):
+  round_to = 3
+  rounded = [ round(val, round_to) for val in list_of_nums ]
+  counted_dic = {}
+  for val in rounded:
+    if val in counted_dic:
+      counted_dic[val] += 1
+    else:
+      counted_dic[val] = 1
+  x = []
+  y = []
+  for val, ct in counted_dic.items():
+    x.append(math.log(val))
+    y.append(ct)
+
+  fname = "%s___%s" % ("_".join(title.split(" ")), "scatter_aggregate_nat_log")
+  graph_scatter(x, y, f'{title} (ln)', 'count', fname)
 
 
 def graph_hist(list_of_nums, title):
@@ -143,12 +163,17 @@ if __name__ == '__main__':
   else:
     print("\tGraphing all columns...")
     for header_vals in header_vals_list:
-      title = header_vals[0]
+      column = header_vals[0]
       list_of_nums = header_vals[1]
+
+      num_vals = len(list_of_nums)
+
+      title = f'{column}_n{num_vals}'
      
       graph_hist(list_of_nums, title)
       graph_scatter_with_idx(list_of_nums, title)
       graph_scatter_count(list_of_nums, title)
+      graph_scatter_count_nl(list_of_nums, title)
 
 
   print("Done.")
