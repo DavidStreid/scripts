@@ -1,5 +1,6 @@
 import sys
 from os.path import exists
+from numpy import cov
 import matplotlib.pyplot as plt
 import math
 import argparse
@@ -142,6 +143,11 @@ def graph_selected_axes(x_axis, y_axis, header_vals_list):
   if not x_vals or not y_vals:
     print("\t\t[ERROR] Invalid - x_axis=%s y_axis=%s" % (x_axis, y_axis))
   else:
+    covariance = cov(x_vals, y_vals)[0] # [ [ y_int, slope ], ... ]
+    correlation = covariance[1]
+    slope = '(-)' if correlation < 0 else '(+)'
+    
+    print(f"{slope} slope: {correlation} (x={x_axis} y={y_axis})")
     fname = '%s_vs_%s' % (y_axis, x_axis)
     graph_scatter(x_vals, y_vals, x_axis, y_axis, fname)
 
@@ -211,7 +217,7 @@ if __name__ == '__main__':
       num_vals = len(list_of_nums)
 
       title = f'{column}_n{num_vals}'
-     
+
       graph_hist(list_of_nums, title)
       graph_scatter_with_idx(list_of_nums, title)
       graph_scatter_count(list_of_nums, title)
