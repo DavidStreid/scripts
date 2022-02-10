@@ -52,10 +52,15 @@ def graph_scatter_count_nl(list_of_nums, title):
       counted_dic[val] = 1
   x = []
   y = []
+  skipped_zero = None
   for val, ct in counted_dic.items():
-    x.append(math.log(val))
-    y.append(ct)
-
+    if val != 0:
+      x.append(math.log(val))
+      y.append(ct)
+    else:
+      skipped_zero = ct
+  if skipped_zero is not None:
+    print(f"\t\tSkipped {skipped_zero} '0' values")
   fname = "%s___%s" % ("_".join(title.split(" ")), "scatter_aggregate_nat_log")
   graph_scatter(x, y, f'{title} (ln)', 'count', fname)
 
