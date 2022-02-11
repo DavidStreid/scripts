@@ -143,10 +143,13 @@ def graph_selected_axes(x_axis, y_axis, header_vals_list):
   if not x_vals or not y_vals:
     print("\t\t[ERROR] Invalid - x_axis=%s y_axis=%s" % (x_axis, y_axis))
   else:
-    pearson_correlation_coefficient = correlation(x_vals, y_vals)
-    slope = '(-)' if pearson_correlation_coefficient < 0 else '(+)'
-    
-    print(f"{slope} Pearson’s correlation coefficient: {pearson_correlation_coefficient} (x={x_axis} y={y_axis})")
+    if len(set(x_vals)) == 1 or len(set(y_vals)) == 1:
+      print(f"(0) Pearson’s correlation coefficient: n/a (x={x_axis} y={y_axis})") 
+    else:
+      pearson_correlation_coefficient = correlation(x_vals, y_vals)
+      slope = '(-)' if pearson_correlation_coefficient < 0 else '(+)'
+      print(f"{slope} Pearson’s correlation coefficient: {pearson_correlation_coefficient} (x={x_axis} y={y_axis})")
+
     fname = '%s_vs_%s' % (y_axis, x_axis)
     graph_scatter(x_vals, y_vals, x_axis, y_axis, fname)
 
