@@ -1,6 +1,6 @@
 import sys
 from os.path import exists
-from numpy import cov
+from statistics import correlation
 import matplotlib.pyplot as plt
 import math
 import argparse
@@ -143,11 +143,10 @@ def graph_selected_axes(x_axis, y_axis, header_vals_list):
   if not x_vals or not y_vals:
     print("\t\t[ERROR] Invalid - x_axis=%s y_axis=%s" % (x_axis, y_axis))
   else:
-    covariance = cov(x_vals, y_vals)[0] # [ [ y_int, slope ], ... ]
-    correlation = covariance[1]
-    slope = '(-)' if correlation < 0 else '(+)'
+    pearson_correlation_coefficient = correlation(x_vals, y_vals)
+    slope = '(-)' if pearson_correlation_coefficient < 0 else '(+)'
     
-    print(f"{slope} slope: {correlation} (x={x_axis} y={y_axis})")
+    print(f"{slope} Pearson’s correlation coefficient: {pearson_correlation_coefficient} (x={x_axis} y={y_axis})")
     fname = '%s_vs_%s' % (y_axis, x_axis)
     graph_scatter(x_vals, y_vals, x_axis, y_axis, fname)
 
