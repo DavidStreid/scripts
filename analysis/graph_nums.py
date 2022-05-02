@@ -1,6 +1,6 @@
 import sys
 from os.path import exists
-from statistics import correlation
+from scipy import stats
 import matplotlib.pyplot as plt
 import math
 import argparse
@@ -146,7 +146,7 @@ def graph_selected_axes(x_axis, y_axis, header_vals_list):
     if len(set(x_vals)) == 1 or len(set(y_vals)) == 1:
       print(f"(0) Pearson’s correlation coefficient: n/a (x={x_axis} y={y_axis})") 
     else:
-      pearson_correlation_coefficient = correlation(x_vals, y_vals)
+      (pearson_correlation_coefficient, pvalue) = stats.pearsonr(x_vals, y_vals) # e.g. (-0.7426106572325057, 0.1505558088534455)
       slope = '(-)' if pearson_correlation_coefficient < 0 else '(+)'
       print(f"{slope} Pearson’s correlation coefficient: {pearson_correlation_coefficient} (x={x_axis} y={y_axis})")
 
@@ -177,7 +177,7 @@ if __name__ == '__main__':
   parser.add_argument('-f', dest='input_file', help='comma-separated file', required=True)
   parser.add_argument('-x', dest='x_axis', help='x_axis column (must provide -y)', default=None)
   parser.add_argument('-y', dest='y_axis', help='y_axis column (must provide -x)', default=None)
-  parser.add_argument('-c', dest='columns', help='specific columns in file to graph', default=None)
+  parser.add_argument('-c', dest='columns', help='spece-delimited string of columns to graph (e.g. -c "c1 c2")', default=None)
 
   args = parser.parse_args()
   summary_file = args.input_file
