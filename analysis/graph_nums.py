@@ -95,28 +95,41 @@ def get_columns(f_name):
 
   num_cols_list = list(set([ len(vals) for vals in cols ]))
   if len(num_cols_list) > 1:
-    print("WARNING - some lines have unexpected values")
+    num_columns_to_analyze = min(list(num_cols_list))
+    print(f"WARNING - some columns are missing values. Only analyzing first {num_columns_to_analyze} columns")
   num_cols = sorted(num_cols_list)[0]
 
   list_of_col_values = []
-  for col in range(num_cols):
-    l = [ line[col] for line in cols ]
+  for col_idx in range(num_cols):
+    l = [ line[col_idx] for line in cols ]
     list_of_col_values.append(l)
 
   header_vals_list = []
   for col_vals in list_of_col_values:
     headers = [ val for val in col_vals if not is_float(val) ]
-    if len(headers) == 1:
+
+    if len(headers) == len(col_vals):
+      print("\tIgnoring non-numeric column='%s'" % headers[0])
+      continue
+    if len(headers) > 0:
       header = headers[0]
+      if len(headers) > 1:
+        header_options=[f"'{val}'" for val in headers]
+        print(f"\t[ERROR] Invalid values for header={header}. Non-numerical values=[{','.join(header_options[1:])}]")
+        invalid_indices=[]
+        for idx, col in enumerate(col_vals):
+          if col in headers[1:]:
+            invalid_indices.append(idx)
+        for idx, line in enumerate(cols):
+          if idx in invalid_indices:
+            print(f"\t{DELIMITER.join(line)}")
+        sys.exit(1)
     else:
       header = None
-    if len(headers) == len(col_vals):
-      print("\tIgnoring column='%s'" % headers[0])
-      # Skip any columns w/ just words
-      continue
-    elif header is not None:
+
+    if header is not None:
       print("\tProcessing column=%s" % header)
-    
+
     vals = [ float(val) for val in col_vals if is_float(val) ]
     
     header_vals_list.append( [ header, vals ] ) 
@@ -164,7 +177,7 @@ def validate_inputs(summary_file, x_axis, y_axis, columns, all_headers_set):
     for column in columns:
       if column not in all_headers_set:
         errors.append(f'column={column} is not in the header of the csv')
-    
+
   if len(errors) > 0:
     print("ERRORS")
     for err in errors:
@@ -190,7 +203,7 @@ if __name__ == '__main__':
   if x_axis:
     print(f"\tx='{x_axis}'")
   if y_axis:
-    print(f"\tx='{y_axis}'")
+    print(f"\ty='{y_axis}'")
   if columns:
     print(f"\tcolumms='{columns}'")
     columns = columns.strip().split(" ")
