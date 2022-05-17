@@ -115,15 +115,15 @@ def get_columns(f_name, delimiter):
       header = headers[0]
       if len(headers) > 1:
         header_options=[f"'{val}'" for val in headers]
-        print(f"\t[ERROR] Invalid values for header={header}. Non-numerical values=[{','.join(header_options[1:])}]")
-        invalid_indices=[]
-        for idx, col in enumerate(col_vals):
-          if col in headers[1:]:
-            invalid_indices.append(idx)
-        for idx, line in enumerate(cols):
-          if idx in invalid_indices:
-            print(f"\t{delimiter.join(line)}")
-        sys.exit(1)
+        print("\tIgnoring non-numeric column='%s'" % headers[0])
+        # invalid_indices=[]
+        # for idx, col in enumerate(col_vals):
+        #   if col in headers[1:]:
+        #     invalid_indices.append(idx)
+        # for idx, line in enumerate(cols):
+        #   if idx in invalid_indices:
+        #     print(f"\t{delimiter.join(line)}")
+        continue
     else:
       header = None
 
