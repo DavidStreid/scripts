@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import math
 import argparse
 
-DELIMITER = ","
+DEFAULT_DELIMITER = ","
 
 def graph_scatter(x_axis, y_axis, x_label, y_label, fname):
   plt.scatter(x_axis, y_axis)
@@ -81,12 +81,12 @@ def graph_hist(list_of_nums, title):
   plt.close()
 
 
-def get_columns(f_name):
+def get_columns(f_name, delimiter):
   cols = []
   with open(f_name, 'r') as summary_in:
     for line in summary_in:
       cleaned = line.strip()
-      vals = cleaned.split(DELIMITER)
+      vals = cleaned.split(delimiter)
       cols.append(vals)
 
   if len(cols) == 0:
@@ -122,7 +122,7 @@ def get_columns(f_name):
             invalid_indices.append(idx)
         for idx, line in enumerate(cols):
           if idx in invalid_indices:
-            print(f"\t{DELIMITER.join(line)}")
+            print(f"\t{delimiter.join(line)}")
         sys.exit(1)
     else:
       header = None
@@ -190,16 +190,21 @@ if __name__ == '__main__':
   parser.add_argument('-f', dest='input_file', help='comma-separated file', required=True)
   parser.add_argument('-x', dest='x_axis', help='x_axis column (must provide -y)', default=None)
   parser.add_argument('-y', dest='y_axis', help='y_axis column (must provide -x)', default=None)
-  parser.add_argument('-c', dest='columns', help='spece-delimited string of columns to graph (e.g. -c "c1 c2")', default=None)
+  parser.add_argument('-c', dest='columns', help='space-delimited string of columns to graph (e.g. -c "c1 c2")', default=None)
+  parser.add_argument('-d', dest='delimiter', help='delimiter for input_file (-f). Default: ","', default=DEFAULT_DELIMITER)
 
   args = parser.parse_args()
   summary_file = args.input_file
   x_axis = args.x_axis
   y_axis = args.y_axis
   columns = args.columns
+  delimiter = args.delimiter
 
   print("Inputs")
-  print(f"\tcsv={summary_file}")
+  print(f"\tcsv={summary_file} (delimiter={delimiter})")
+
+  if delimiter == "\\t":
+    delimiter = "\t"
   if x_axis:
     print(f"\tx='{x_axis}'")
   if y_axis:
@@ -212,7 +217,7 @@ if __name__ == '__main__':
 
 
   print("Processing...")
-  header_vals_list = get_columns(summary_file)
+  header_vals_list = get_columns(summary_file, delimiter)
   all_headers = set([hv[0] for hv in header_vals_list])
   validate_inputs(summary_file, x_axis, y_axis, columns, all_headers)
 
