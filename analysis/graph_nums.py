@@ -161,7 +161,7 @@ def graph_selected_axes(x_axis, y_axis, header_vals_list):
     else:
       (pearson_correlation_coefficient, pvalue) = stats.pearsonr(x_vals, y_vals) # e.g. (-0.7426106572325057, 0.1505558088534455)
       slope = '(-)' if pearson_correlation_coefficient < 0 else '(+)'
-      print(f"{slope} Pearson’s correlation coefficient: {pearson_correlation_coefficient} (x={x_axis} y={y_axis})")
+      print(f"\tPearson’s correlation coefficient {slope}: {pearson_correlation_coefficient} (x={x_axis} y={y_axis})")
 
     fname = '%s_vs_%s' % (y_axis, x_axis)
     graph_scatter(x_vals, y_vals, x_axis, y_axis, fname)
