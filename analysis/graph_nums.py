@@ -4,6 +4,7 @@ from scipy import stats
 import matplotlib.pyplot as plt
 import math
 import argparse
+import numpy as np
 
 DEFAULT_DELIMITER = ","
 
@@ -144,6 +145,54 @@ def is_float(element: any) -> bool:
     except ValueError:
         return False
 
+
+def add_to_bin(bin, idx, bar_y_values, bar_x_values, bin_x_mapping, bins):
+  ''' Util for @graph_bar_with_averages '''
+  bin_name = f"b{idx+1}"
+  x_vals = [ tup[0] for tup in bin ]
+  y_vals = [ tup[1] for tup in bin ]
+  y_avg = sum(y_vals) / len(y_vals)
+  bar_y_values.append(y_avg)
+  bar_x_values.append(bin_name)
+  bin_x_mapping.append([bin_name, min(x_vals), max(x_vals), len(x_vals), y_avg])
+  bins.append(bin)
+
+def graph_bar_with_averages(x_vals, y_vals, x_axis, y_axis, fname):
+  ''' With multiple datapoints, simplifies by grouping x_values and reporting their average as the y'''
+  assert len(x_vals) == len(y_vals)
+
+  tuples = list(zip(x_vals, y_vals))
+  tuples.sort(key=lambda tup: tup[0])
+
+  bar_x_values = []
+  bar_y_values = []
+  bin_x_mapping = []
+  bin_size = int(len(x_vals) / 10) + 1
+  bins = []
+  bin = []
+  for idx, tup in enumerate(tuples):
+    bin.append(tup)
+    if (idx + 1) % bin_size == 0:
+      add_to_bin(bin, len(bins), bar_y_values, bar_x_values, bin_x_mapping, bins)
+      bin = []
+  if len(bin) > 0:
+    add_to_bin(bin, len(bins), bar_y_values, bar_x_values, bin_x_mapping, bins)
+    
+  print("bin_name\tbin_min\tbin_max\tnum\tavg_y")
+  for row in bin_x_mapping:
+    print(f"{row[0]}\t{row[1]}\t{row[2]}\t{row[3]}\t{row[4]}")
+
+  bar_x_indices = np.arange(len(bar_x_values))
+
+  plt.bar(bar_x_indices, bar_y_values, align='center', alpha=0.5)
+  plt.xticks(bar_x_indices, bar_x_values)
+  plt.xlabel(x_axis)
+  plt.ylabel(y_axis)
+  plt.title(fname)
+  plt.savefig("%s.pdf" % fname)
+  plt.close()
+
+
 def graph_selected_axes(x_axis, y_axis, header_vals_list):
   x_vals, y_vals = None, None
 
@@ -165,6 +214,9 @@ def graph_selected_axes(x_axis, y_axis, header_vals_list):
 
     fname = '%s_vs_%s' % (y_axis, x_axis)
     graph_scatter(x_vals, y_vals, x_axis, y_axis, fname)
+
+    bar_fname = f'bar_{fname}'
+    graph_bar_with_averages(x_vals, y_vals, x_axis, y_axis, bar_fname)
 
 
 def validate_inputs(summary_file, x_axis, y_axis, columns, all_headers_set):
