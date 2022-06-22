@@ -194,7 +194,7 @@ def graph_bar_with_averages(x_vals, y_vals, x_axis, y_axis, fname):
   plt.close()
 
 
-def graph_selected_axes(x_axis, y_axis, header_vals_list):
+def graph_selected_axes(x_axis, y_axis, header_vals_list, x_min, x_max):
   x_vals, y_vals = None, None
 
   for header_vals in header_vals_list:
@@ -202,18 +202,64 @@ def graph_selected_axes(x_axis, y_axis, header_vals_list):
       x_vals = header_vals[1]
     elif header_vals[0] == y_axis:
       y_vals = header_vals[1]
-
+      
   if not x_vals or not y_vals:
     print("\t\t[ERROR] Invalid - x_axis=%s y_axis=%s" % (x_axis, y_axis))
   else:
+    if x_min is not None or x_max is not None:
+      filter_label = ''
+      if x_min is None:
+        x_min = float("-inf")
+      else:
+        filter_label = f"xmin{x_min}"
+        x_min = float(x_min)
+        print(f"\t\tmin_x_filter={x_min}")
+      if x_max is None:
+        x_max = float("inf")
+      else:
+        if filter_label == '':
+          filter_label = f"xmax{x_max}"
+        else:
+          filter_label = f"{filter_label}_xmax{x_max}"
+        x_max = float(x_max)
+        print(f"\t\tmax_x_filter={x_max}")
+
+      filtered_indices = []
+      for idx, x_val in enumerate(x_vals):
+        if x_val > x_min and x_val < x_max:
+          filtered_indices.append(idx)
+
+      filtered_x_vals = []
+      for idx, x_val in enumerate(x_vals):
+        if idx in filtered_indices:
+          filtered_x_vals.append(x_val)
+      filtered_y_vals = []
+      for idx, y_val in enumerate(y_vals):
+        if idx in filtered_indices:
+          filtered_y_vals.append(y_val)
+
+      print(f"\t\tFiltered n={len(filtered_indices)} from n={len(x_vals)}")
+      x_vals = filtered_x_vals
+      y_vals = filtered_y_vals
+
+      
+      print(f"\t\tMEAN_{y_axis}={sum(y_vals)/len(y_vals)} (n={len(y_vals)})")
+      print(f"\t\tMEAN_{x_axis}={sum(x_vals)/len(x_vals)} (n={len(x_vals)})")
+      print(f"\t\tMIN_{y_axis}={min(y_vals)}")
+      print(f"\t\tMAX_{y_axis}={max(y_vals)}")
+      fname = '%s_vs_%s___F%s' % (y_axis, x_axis, filter_label)
+    else:
+      fname = '%s_vs_%s' % (y_axis, x_axis)
     if len(set(x_vals)) == 1 or len(set(y_vals)) == 1:
       print(f"(0) Pearson’s correlation coefficient: n/a (x={x_axis} y={y_axis})") 
     else:
       (pearson_correlation_coefficient, pvalue) = stats.pearsonr(x_vals, y_vals) # e.g. (-0.7426106572325057, 0.1505558088534455)
+
+      m, c = np.polyfit(x_vals, y_vals, 1)
+      print(f"\tLeast squares polynomial fit: y = {m}x + {c}")
       slope = '(-)' if pearson_correlation_coefficient < 0 else '(+)'
       print(f"\tPearson’s correlation coefficient {slope}: {pearson_correlation_coefficient} (x={x_axis} y={y_axis})")
 
-    fname = '%s_vs_%s' % (y_axis, x_axis)
     graph_scatter(x_vals, y_vals, x_axis, y_axis, fname)
 
     bar_fname = f'bar_{fname}'
@@ -245,6 +291,8 @@ if __name__ == '__main__':
   parser.add_argument('-y', dest='y_axis', help='y_axis column (must provide -x)', default=None)
   parser.add_argument('-c', dest='columns', help='space-delimited string of columns to graph (e.g. -c "c1 c2")', default=None)
   parser.add_argument('-d', dest='delimiter', help='delimiter for input_file (-f). Default: ","', default=DEFAULT_DELIMITER)
+  parser.add_argument('-xmin', dest='xmin', help='minimum x value to include in correlation', default=None)
+  parser.add_argument('-xmax', dest='xmax', help='maximum x value to include in correlation', default=None)
 
   args = parser.parse_args()
   summary_file = args.input_file
@@ -252,6 +300,9 @@ if __name__ == '__main__':
   y_axis = args.y_axis
   columns = args.columns
   delimiter = args.delimiter
+  
+  x_min = args.xmin
+  x_max = args.xmax
 
   print("Inputs")
   print(f"\tcsv={summary_file} (delimiter={delimiter})")
@@ -277,7 +328,7 @@ if __name__ == '__main__':
   print("Graphing...")
   if x_axis and y_axis:
     print("\t[graph] %s vs %s..." % (x_axis, y_axis))
-    graph_selected_axes(x_axis, y_axis, header_vals_list)
+    graph_selected_axes(x_axis, y_axis, header_vals_list, x_min, x_max)
   else:
     for header_vals in header_vals_list:
       if columns:
