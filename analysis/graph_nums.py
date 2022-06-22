@@ -177,10 +177,11 @@ def graph_bar_with_averages(x_vals, y_vals, x_axis, y_axis, fname):
       bin = []
   if len(bin) > 0:
     add_to_bin(bin, len(bins), bar_y_values, bar_x_values, bin_x_mapping, bins)
-    
-  print("bin_name\tbin_min\tbin_max\tnum\tavg_y")
-  for row in bin_x_mapping:
-    print(f"{row[0]}\t{row[1]}\t{row[2]}\t{row[3]}\t{row[4]}")
+
+  with open(f"bin_info_{fname}.tsv", "w") as bin_info_out:
+    bin_info_out.write("bin_name\tbin_min\tbin_max\tnum\tavg_y\n")
+    for row in bin_x_mapping:
+      bin_info_out.write(f"{row[0]}\t{row[1]}\t{row[2]}\t{row[3]}\t{row[4]}\n")
 
   bar_x_indices = np.arange(len(bar_x_values))
 
