@@ -87,7 +87,7 @@ def get_columns(f_name, delimiter):
   with open(f_name, 'r') as summary_in:
     for line in summary_in:
       cleaned = line.strip()
-      vals = cleaned.split(delimiter)
+      vals = [ v.strip() for v in cleaned.split(delimiter) ]
       cols.append(vals)
 
   if len(cols) == 0:
