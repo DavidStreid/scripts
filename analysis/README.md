@@ -88,7 +88,7 @@ $ python3 test_classifiers.py \
 
 ### Run grapher
 ```
-$ python3 -f graph_alt_allele_summary.py my_file.txt
+$ python3 graph_alt_allele_summary.py -f my_file.txt
 Input=my_file.txt
 	Processing...
 		Ignoring column: 'file'
