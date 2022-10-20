@@ -1,6 +1,24 @@
-PYTHON_VERSION=$1
-ssl_dir=$2
-tgt_dir=$3
+#!/bin/sh
+
+help_string="./install_python.sh -v X.X.X [-s open_ssl_dir] [-t tgt_dir]"
+while getopts ":v:s:t:h" opt; do
+    case $opt in
+        v) PYTHON_VERSION=${OPTARG}
+        ;;
+        s) ssl_dir=${OPTARG}
+        ;;
+        t) tgt_dir=${OPTARG}
+        ;;
+        h) echo "${help_string}" && exit 0
+        ;;
+    esac 
+done
+
+if [[ -z ${PYTHON_VERSION} ]]; then
+  echo "Error - python version is required. Exiting"
+  echo "${help_string}"
+  exit 1
+fi
 
 CMD_LOG=$(pwd)/log_run_cmd.out
 
