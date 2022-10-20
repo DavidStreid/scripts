@@ -70,7 +70,7 @@ And if looking at the logs of the `make altinstall` step, there may be one of th
 
     Python requires an OpenSSL 1.0.2 or 1.1 compatible libssl with X509_VERIFY_PARAM_set1_host()
 
-Solution: **python requires compatible openssl to install dependencies**
+**Solution**: python requires compatible openssl **AND LIBS** to install dependencies
 
 ### Solution - Install python packages that pull required system library header files 
 Try to install the dependencies as described in greater detail in this [stackoverflow issue](https://stackoverflow.com/a/65555409/3874247) required by python to obtain the right system library headers, such as the headers for `openssl`. Since this is packaged w/ the OS distribution, they might not be easily found, or not be present.
