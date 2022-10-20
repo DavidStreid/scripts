@@ -19,19 +19,24 @@ make altinstall
 ```
 
 ## options
-`-s` string
+`-v` string required
+  > Eg: `3.9.15`
+
+Python version to install
+
+`-s` string (optional)
   > Eg: `/usr/local/openssl`
 
 Directory of custom SSL library (See **Troubleshooting** for more info)
 
-`-t` string
+`-t` string (optional)
   > E.g. `/usr/local/bin`
 
 Directory to install python version to
 
 
 ```
-$ ./install_python.sh 3.9.15 /usr/local/openssl /usr/local/bin/
+$ ./install_python.sh -v 3.9.15 -s /usr/local/openssl -t /usr/local/bin/
 [CONFIG]
 	python_version=3.9.15
 	ssl_dir=/usr/local/openssl
