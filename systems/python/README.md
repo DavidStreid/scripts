@@ -73,9 +73,9 @@ And if looking at the logs of the `make altinstall` step, there may be one of th
 Solution: **python requires compatible openssl to install dependencies**
 
 ### Solution - Install python packages that pull required system library header files 
-Try to install the dependencies ([REF](https://devguide.python.org/getting-started/setup-building/index.html#linux)) required by python to obtain the right system library headers, such as the headers for `openssl`. Since this is packaged w/ the OS distribution, they might not be easily found, or not be present.
+Try to install the dependencies as described in greater detail in this [stackoverflow issue](https://stackoverflow.com/a/65555409/3874247) required by python to obtain the right system library headers, such as the headers for `openssl`. Since this is packaged w/ the OS distribution, they might not be easily found, or not be present.
 
-e.g. for yum-like systems. See link for other OS's
+e.g. for yum-like systems. See [python docs](https://devguide.python.org/getting-started/setup-building/index.html#linux) for other distributions
 
     sudo yum install yum-utils
     sudo yum-builddep python3
