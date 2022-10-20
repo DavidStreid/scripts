@@ -60,4 +60,10 @@ run_cmd ${DNLD}
 run_cmd ${EXCT} && \
 run_cmd ${CONF} && \
 run_cmd ${INST}
+if [[ $? -eq 0 ]]; then
+  printf "\tSuccessfully installed python${PYTHON_VERSION}\n"
+else
+  printf "\tFailed to install python${PYTHON_VERSION}\n"
+fi
 
+echo "Exiting."
