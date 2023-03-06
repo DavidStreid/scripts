@@ -22,3 +22,18 @@ echo "${CMD}"
 echo "LOG=${LOG}"
 { time ${CMD}; } 2> log_time.out > ${LOG}
 ```
+
+
+## Wrapper around logging & running command
+```
+#########################################
+# Executes and logs command
+# Arguments:
+#   INPUT_CMD - string of command to run, e.g. "picard MarkDuplicates ..."
+#########################################
+run_cmd () {
+  INPUT_CMD=$@
+  echo ${INPUT_CMD} >> ${CMD_FILE}
+  eval ${INPUT_CMD}
+}
+```
