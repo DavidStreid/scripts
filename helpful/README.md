@@ -1,5 +1,11 @@
 # Helpful Reference
 
+## find
+* Retrieve files written on a specific day - tricky because interval needs to be >=2, i.e. `-mtime +6 -mtime -7` to look for files written one week ago will return nothing, but `-mtime +6 -mtime -8` will work
+```
+$ find /mnt/storage/ -mindepth 2 -maxdepth 2 -type d -mtime +0 -mtime -2
+```
+
 ## swap
 * **GET TOTAL** using [swap](https://www.cyberciti.biz/faq/linux-which-process-is-using-swap/) & [awk](https://stackoverflow.com/a/25245025/3874247)
 ```
