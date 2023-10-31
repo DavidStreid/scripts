@@ -1,5 +1,8 @@
 # Helpful Reference
 
+## [rmdir](https://en.wikipedia.org/wiki/Rmdir)
+* Remove directories, but only if empty. i.e. avoid `rm -rf`
+
 ## find
 * Retrieve files written on a specific day - tricky because interval needs to be >=2, i.e. `-mtime +6 -mtime -7` to look for files written one week ago will return nothing, but `-mtime +6 -mtime -8` will work
 ```
