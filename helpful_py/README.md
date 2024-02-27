@@ -14,6 +14,9 @@ Can be used as follows
 @log_fn
 def tester(arg1, arg2):
   pass
-
+tester("hello", "world")
+```
+Will print
+```
 tester("hello", "world")
 ```
