@@ -20,3 +20,13 @@ Will print
 ```
 tester("hello", "world")
 ```
+
+# Setup
+| yum (CentOS, Fedora, Red-hat) | apt (Debian, Ubuntu) | Purpose                                                                                                 |
+|-------------------------------|----------------------|---------------------------------------------------------------------------------------------------------|
+| python-devel                  | python-dev           | provide development headers and libraries necessary for compiling and building Python extension modules |
+
+```
+yum -y install pip python-devel
+apt install python3.10-dev
+```
