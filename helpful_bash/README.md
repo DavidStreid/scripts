@@ -44,5 +44,9 @@ run_cmd () {
   INPUT_CMD=$@
   echo ${INPUT_CMD} >> ${CMD_FILE}
   eval ${INPUT_CMD}
+  if [[ $? -ne 0 ]]; then
+    # Exit script if command fails
+    exit 1   
+  fi
 }
 ```
