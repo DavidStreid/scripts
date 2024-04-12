@@ -9,6 +9,16 @@
 $ find /mnt/storage/ -mindepth 2 -maxdepth 2 -type d -mtime +0 -mtime -2
 ```
 
+## compare directories
+The following will get files missing from DIR1 that are present in DIR2
+```
+DIR1=...
+DIR2=...
+comm -23 <(find ${DIR1} -type f -printf "%P\n" | sort) <(find ${DIR2} -type f -printf "%P\n" | sort) > comm_diff.txt
+# comm: -2 to ignore files unique to DIR2, -3 to ignore shared files
+# -printf "%P\n": get relative paths
+```
+
 ## swap
 * **GET TOTAL** using [swap](https://www.cyberciti.biz/faq/linux-which-process-is-using-swap/) & [awk](https://stackoverflow.com/a/25245025/3874247)
 ```
