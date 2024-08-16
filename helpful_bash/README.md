@@ -19,6 +19,24 @@ comm -23 <(find ${DIR1} -type f -printf "%P\n" | sort) <(find ${DIR2} -type f -p
 # -printf "%P\n": get relative paths
 ```
 
+## paste
+Show columns side by side
+```
+$ paste <(grep -P "chr1\t100" sample.vcf | cut -f9 | sed 's/:/\n/g' | head) <(grep -P "chr1\t100" sample.vcf | cut -f10 | sed 's/:/\n/g' | head)
+GT  0/1
+GQ  20
+```
+
+*From below,*
+```
+$ grep -P "chr1\t100" sample.vcf | cut -f9 | sed 's/:/\n/g' | head
+GT
+GQ
+$ grep -P "chr1\t100" sample.vcf | cut -f10 | sed 's/:/\n/g' | head
+0/1
+20
+```
+
 ## swap
 * **GET TOTAL** using [swap](https://www.cyberciti.biz/faq/linux-which-process-is-using-swap/) & [awk](https://stackoverflow.com/a/25245025/3874247)
 ```
