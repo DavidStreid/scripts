@@ -37,6 +37,23 @@ $ grep -P "chr1\t100" sample.vcf | cut -f10 | sed 's/:/\n/g' | head
 20
 ```
 
+## Formatting `ls`
+AWK: `awk '{print $6 "_" $7 "_" $8"\t"$5"\t"$9}'`
+
+```
+$ ls -lhtr | awk '{print $6 "_" $7 "_" $8"\t"$5"\t"$9}'
+Aug_23_10:14	32B	f1.txt
+Aug_23_10:14	55B	f2.txt
+Aug_23_10:14	2B	f3.txt
+Aug_23_10:17	759K	f4.txt
+Aug_23_10:17	246K	f5.txt
+Aug_23_10:17	199M	f6.txt
+Aug_23_10:14	2G	f7.txt
+Aug_23_10:17	246K	f8.txt
+Aug_23_10:17	186M	f9.txt
+Aug_23_10:14	3B	f10.txt
+```
+
 ## swap
 * **GET TOTAL** using [swap](https://www.cyberciti.biz/faq/linux-which-process-is-using-swap/) & [awk](https://stackoverflow.com/a/25245025/3874247)
 ```
