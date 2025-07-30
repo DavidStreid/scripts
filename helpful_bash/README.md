@@ -9,6 +9,18 @@
 $ find /mnt/storage/ -mindepth 2 -maxdepth 2 -type d -mtime +0 -mtime -2
 ```
 
+## rsync
+```
+rsync -avP     # "a" - always use this, "v" - verbose, "P" - include partial if interrupted and report progress
+```
+
+**To check state prior to running**
+
+```
+rsync -navui   # "n" - dry-run, "u" - update file if older, "i" itemize, 
+rsync -avPu    # Everything looks good, run
+```
+
 ## compare directories
 The following will get files missing from DIR1 that are present in DIR2
 ```
