@@ -30,3 +30,34 @@ tester("hello", "world")
 yum -y install pip python-devel
 apt install python3.10-dev
 ```
+
+# `uv`
+tool for managing python environments
+
+## Quick runbook
+
+Individual script
+* why? Creates a self-contained environment so anyone can run this script and get the same results
+
+```
+uv init --script my_script.py
+uv lock --script my_script.py
+```
+
+For Adding packages, use `uv add`, which will automatically update the `.py.lock` file
+```
+uv add --script my_script.py requests
+```
+
+e.g. After all three commands below
+```
+$ ls
+my_script.py            my_script.py.lock
+$ head -5 my_script.py
+# /// script
+# requires-python = ">=3.9"
+# dependencies = [
+#     "requests>=2.32.5",
+# ]
+```
+
