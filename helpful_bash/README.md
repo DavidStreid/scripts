@@ -21,7 +21,16 @@ rsync -navui   # "n" - dry-run, "u" - update file if older, "i" itemize,
 rsync -avPu    # Everything looks good, run
 ```
 
-## compare directories
+## `comm`
+Given two sorted files, return entries unique (`-23` or `-13`) to each and shared in both (`-12`)
+
+```
+comm -23 f1.txt f2.txt # Only in File 1
+comm -13 f1.txt f2.txt # Only in File 2
+comm -12 f1.txt f2.txt # In Both
+```
+
+### compare directories
 The following will get files missing from DIR1 that are present in DIR2
 ```
 DIR1=...
