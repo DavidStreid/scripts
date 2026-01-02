@@ -58,6 +58,25 @@ $ grep -P "chr1\t100" sample.vcf | cut -f10 | sed 's/:/\n/g' | head
 20
 ```
 
+## `jq` - json grep
+```
+$ wget https://github.com/Illumina/ExpansionHunter/blob/master/variant_catalog/hg38/variant_catalog.json
+$ jq -r '.[] | {LocusId, ReferenceRegion}' regions.json | head
+{
+  "LocusId": "AFF2",
+  "ReferenceRegion": "chrX:148500631-148500691"
+}
+{
+  "LocusId": "AR",
+  "ReferenceRegion": "chrX:67545316-67545385"
+}
+...
+$ jq -r '.[] | "\(.LocusId)\t\(.ReferenceRegion)"'  variant_catalog.json
+AFF2	chrX:148500631-148500691
+AR	chrX:67545316-67545385
+...
+```
+
 ## Formatting `ls`
 AWK: `awk '{print $6 "_" $7 "_" $8"\t"$5"\t"$9}'`
 
