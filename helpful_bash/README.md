@@ -87,7 +87,17 @@ $ jq -r '.[] | select(.LocusId == "FMR1") | "\(.LocusId)\t\(.ReferenceRegion)"' 
 FMR1	chrX:147912050-147912110
 ```
 
-## Formatting `ls`
+## `awk`
+### Sum list of numbers
+
+Pipe to `... | awk '{sum += $1} END {print sum}'`
+
+```
+$ for i in {1..10}; do echo ${i}; done | awk '{sum += $1} END {print sum}'
+55
+```
+
+### Formatting `ls`
 AWK: `awk '{print $6 "_" $7 "_" $8"\t"$5"\t"$9}'`
 
 ```
@@ -104,7 +114,7 @@ Aug_23_10:17	186M	f9.txt
 Aug_23_10:14	3B	f10.txt
 ```
 
-## swap
+### swap
 * **GET TOTAL** using [swap](https://www.cyberciti.biz/faq/linux-which-process-is-using-swap/) & [awk](https://stackoverflow.com/a/25245025/3874247)
 ```
 for file in /proc/*/status ; do awk '/VmSwap|Name/{printf $2 " " $3}END{ print ""}' $file; done | cut -d' ' -f2 | grep -E '[0-9]' |  sort -V  | awk '{s+=$1} END {printf "%.0f\n", s}
