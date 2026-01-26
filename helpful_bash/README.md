@@ -1,5 +1,20 @@
 # Helpful Reference
 
+## Options
+
+***Strict mode***
+```
+set -euo pipefail     # -e:          Exit script if command fails  
+                      # -u:          Unset variables cause error
+                      # -o pipefail: failures within pipe cause error
+ ```
+
+***Log Commands***
+```
+set -x    # log commands
+set +x    # end logging
+```
+
 ## [rmdir](https://en.wikipedia.org/wiki/Rmdir)
 * Remove directories, but only if empty. i.e. avoid `rm -rf`
 
@@ -139,6 +154,19 @@ echo "LOG=${LOG}"
 
 
 ## Wrapper around logging & running command
+
+simple way - `set -x` (start logging) & `set +x` (stop logging)
+```
+$ echo "hello world"
++ echo 'hello world'
+hello world
+$ set +x
++ set +x
+$ echo "done."
+done.
+```
+
+Custom formatting - use a function
 ```
 #########################################
 # Executes and logs command
