@@ -63,6 +63,13 @@ GT  0/1
 GQ  20
 ```
 
+helpful function - pivot a TSV into a vertical key-value list
+```
+peek() {
+  paste <(head -n 1 "$1" | tr '\t' '\n') <(tail -n 1 "$1" | tr '\t' '\n')
+}
+```
+
 *From below,*
 ```
 $ grep -P "chr1\t100" sample.vcf | cut -f9 | sed 's/:/\n/g' | head
