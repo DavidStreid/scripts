@@ -109,6 +109,32 @@ $ jq -r '.[] | select(.LocusId == "FMR1") | "\(.LocusId)\t\(.ReferenceRegion)"' 
 FMR1	chrX:147912050-147912110
 ```
 
+## `xargs`
+
+No args - `... | xargs <CMD> ...`, potentially not safe and batches all args to run `CMD` once
+
+### `... | xargs -I {} <CMD> {} ...` - run piped command on each delimited output
+
+* NOTE - `{}` is just a placeholder, can be any set of characters
+
+```
+find ... | xargs -I {} mv {} /backup/
+```
+
+Or, in batches (sort every set of 5 files)
+```
+find . -type f | xargs -n 5 echo | sort
+```
+
+### `find ... print0 | xargs -0 ...` - safely piping from `find`
+
+* end every file w/ a null character
+* expect null character delimiter
+
+```
+find . -type f print0 | xargs -0 ls
+```
+
 ## `awk`
 ### Sum list of numbers
 
