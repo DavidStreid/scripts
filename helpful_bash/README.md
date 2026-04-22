@@ -170,6 +170,37 @@ for file in /proc/*/status ; do awk '/VmSwap|Name/{printf $2 " " $3}END{ print "
 # TODO - misses many of the processes that don't output a number of kB
 ```
 
+## [`parallel`](https://www.gnu.org/software/parallel/parallel_examples.html)
+
+```
+OUT="./ws"             # this will log workspace
+LOG="cmd_status.tsv"    
+parallel --results "$OUT" \
+         --joblog "$LOG" \
+         --jobs 15 \
+         "echo 'Processing number: {}'" ::: {1..100} # :::: nums.txt # <- (for file input)
+```
+
+***outputs***
+
+```
+$ head cmd_status.tsv
+Seq	Host	Starttime	JobRuntime	Send	Receive	Exitval	Signal	Command
+1	:	1776871386.217	     0.022	0	21	0	0	echo 'Processing number: 1'
+2	:	1776871386.221	     0.023	0	21	0	0	echo 'Processing number: 2'
+...
+$ tree ws/ | head
+ws/
+└── 1
+    ├── 1
+    │   ├── seq
+    │   ├── stderr
+    │   └── stdout
+    ├── 10
+    ...
+```
+
+
 ## Wrap CMD in time & save time-output
 `{ time ${CMD}; } 2> log_time.out`
 
