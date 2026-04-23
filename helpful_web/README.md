@@ -2,7 +2,7 @@
 
 ## [`w3m`](https://w3m.sourceforge.net/MANUAL)
 
-Text-based browser
+Text-based browser - faster to setup than `X11`, or X Window System
 
 ```
 $ w3m https://w3m.sourceforge.net/MANUAL | head
