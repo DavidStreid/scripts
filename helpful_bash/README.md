@@ -170,6 +170,22 @@ for file in /proc/*/status ; do awk '/VmSwap|Name/{printf $2 " " $3}END{ print "
 # TODO - misses many of the processes that don't output a number of kB
 ```
 
+## `while`
+
+**Best Practices**
+- specify delimiter, i.e. Internal Field Separator, or `IFS`
+- redirection - efficient and allows for custom file descriptors, e.g. `read line <&3` & `3< file.txt`
+
+e.g. reading a TSV
+```
+cat data.tsv
+# 4	5
+while IFS=$'\t' read c1 c2 <&3; do
+  echo "$c1 + $c2 = $((c1 + c2))"
+done 3< data.tsv
+# 4 + 5 = 9
+```
+
 ## [`parallel`](https://www.gnu.org/software/parallel/parallel_examples.html)
 
 ```
