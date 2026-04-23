@@ -61,3 +61,22 @@ $ head -5 my_script.py
 # ]
 ```
 
+# Libraries
+
+## tqdm
+
+Quick progress bar for for-loops & iterables
+
+```
+from tqdm import tqdm
+import time
+ct = 100
+for i in tqdm(range(100), desc="count", leave=False, total=ct):
+  time.sleep(0.01)
+```
+
+**OUTPUT**
+```
+count:  45%|███████        | 45/100 [00:01<00:00, 81.58it/s]
+# if leave=False, this bar will disappear when it completes
+```
