@@ -36,6 +36,11 @@ rsync -navui   # "n" - dry-run, "u" - update file if older, "i" itemize,
 rsync -avPu    # Everything looks good, run
 ```
 
+**Include relative path**
+
+* `-R` + `/./` means, _"start creating the directory structure after the `/./`"_
+
+
 ## `comm`
 Given two sorted files, return entries unique (`-23` or `-13`) to each and shared in both (`-12`)
 
