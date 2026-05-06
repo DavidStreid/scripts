@@ -80,3 +80,21 @@ for i in tqdm(range(100), desc="count", leave=False, total=ct):
 count:  45%|███████        | 45/100 [00:01<00:00, 81.58it/s]
 # if leave=False, this bar will disappear when it completes
 ```
+
+## [`shiv`](https://github.com/linkedin/shiv)
+
+Creates binaries of python packages
+
+```
+$ shiv -c flake8 -o ~/bin/flake8 flake8
+$ ~/bin/flake8 --version
+3.7.8 (mccabe: 0.6.1, pycodestyle: 2.5.0, pyflakes: 2.1.1) CPython 3.7.4 on Darwin
+```
+
+For hard-to-resolve dependencies, install dependencies to a separate virtual env and use that,
+```
+./dep_env/python -m pip install -r requirements.txt
+./dep_env/python -m pip install .
+
+shiv --python python3.12 --site-packages ./dep_env/lib64/python3.9/site-package -o ~/bin/my_lib -c my_lib
+```
