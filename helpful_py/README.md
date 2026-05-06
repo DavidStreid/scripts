@@ -84,6 +84,7 @@ count:  45%|███████        | 45/100 [00:01<00:00, 81.58it/s]
 ## [`shiv`](https://github.com/linkedin/shiv)
 
 Creates binaries of python packages
+* WARNING - zipapps created with shiv will extract themselves into `~/.shiv`, unless overridden via `SHIV_ROOT`, i.e. there may be runtime issues of multiple users
 
 ```
 $ shiv -c flake8 -o ~/bin/flake8 flake8
