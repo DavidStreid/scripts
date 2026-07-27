@@ -21,6 +21,35 @@ Will print
 tester("hello", "world")
 ```
 
+# StackTrace
+```
+def stacktrace():
+    frames = []
+    try:
+        frame = sys._getframe(1)  # Get the frame AFTER _get_caller_info
+        while frame:
+            filename = frame.f_code.co_filename
+            base_file = os.path.basename(filename)
+            func_name = frame.f_code.co_name
+            frames.append(f"{base_file}::{func_name}")
+            frame = frame.f_back
+    except Exception:
+        pass
+
+    if not frames:
+        return "Unknown"
+
+    frames.reverse()  # Order from root to caller
+    return " > ".join(frames)
+```
+
+**OUTPUTS**
+
+```
+main.py::<module> > tsak.py::process_data > runner.py::execute_step
+```
+
+
 # Setup
 | RPM-based, yum (CentOS/Fedora/RH) | Debian-based, apt (Ubuntu) | Purpose                                                                                                 |
 |-----------------------------------|----------------------------|---------------------------------------------------------------------------------------------------------|
