@@ -140,6 +140,15 @@ find . -type f | xargs -n 5 echo | sort
 find . -type f print0 | xargs -0 ls
 ```
 
+## `tee`
+
+Like a tee pipe fitting with `STDIN` - copies `STDIN` to file AND `STDOUT`
+
+e.g. Log and observe
+```
+$ my_cmd 2>&1 | tee log_my_cmd.out 
+```
+
 ## `awk`
 ### Sum list of numbers
 
