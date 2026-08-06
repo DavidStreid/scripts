@@ -24,6 +24,27 @@ set +x    # end logging
 $ find /mnt/storage/ -mindepth 2 -maxdepth 2 -type d -mtime +0 -mtime -2
 ```
 
+### `find ... print0 | xargs -0 ...` - using the null-byte (`\0`) as a delimiter
+
+Safely piping from `find`
+
+* end every file w/ a null character
+* expect null character delimiter
+
+```
+find . -type f print0 | xargs -0 ls
+```
+
+### `find` - `-path` & `-newermt` options
+
+`-path` - allows general path pattern to search
+
+`-newermt` - like `mtime`, but lets you provide a date fomat
+
+```
+find . -type f -path "./logs/app-*/*.log" -newermt "2025-07-06"
+```
+
 ## rsync
 ```
 rsync -avP     # "a" - always use this, "v" - verbose, "P" - include partial if interrupted and report progress
@@ -129,15 +150,6 @@ find ... | xargs -I {} mv {} /backup/
 Or, in batches (sort every set of 5 files)
 ```
 find . -type f | xargs -n 5 echo | sort
-```
-
-### `find ... print0 | xargs -0 ...` - safely piping from `find`
-
-* end every file w/ a null character
-* expect null character delimiter
-
-```
-find . -type f print0 | xargs -0 ls
 ```
 
 ## `tee`
