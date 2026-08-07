@@ -212,6 +212,19 @@ done 3< data.tsv
 # 4 + 5 = 9
 ```
 
+## `wait`
+
+Wait before running a command, without units, it's seconds
+
+Example - sleep for two days before running a command in the background and then logging resource usage every minute
+* NOTE - could also be `sleep 172800; ...`
+
+```
+sleep 2d; \
+  ./run.sh > log_run.out 2>&1 & \
+  watch -n 60 "./track_resources.sh >> log_resource_tracker.out 2>&1"
+```
+
 ## [`parallel`](https://www.gnu.org/software/parallel/parallel_examples.html)
 
 ```
