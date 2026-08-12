@@ -90,6 +90,14 @@ $ head -5 my_script.py
 # ]
 ```
 
+## run unbuffered
+
+Achieving the same thing as `python -u ...`
+
+```
+PYTHONUNBUFFERED=1 uv run my_script.py 2>&1 | tee log_my_script.out
+```
+
 # Libraries
 
 ## tqdm
