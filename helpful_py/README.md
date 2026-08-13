@@ -1,5 +1,7 @@
 
-# Decorator to log fucntions
+# Logging
+
+## Decorator to log fucntions
 ```
 def log_fn(func):
   def wrapper(*args, **kwargs):
@@ -20,6 +22,23 @@ Will print
 ```
 tester("hello", "world")
 ```
+
+## Simple update to add metadata to logging
+
+1. Add logging config
+
+  ```
+  import logging
+  
+  # Configure logging at the start of your script
+  logging.basicConfig(
+      level=logging.INFO,
+      format="%(asctime)s [%(levelname)s] %(message)s",
+      datefmt="%Y-%m-%d %H:%M:%S",
+  )
+  ```
+
+2. Ctrl-R `"print("` -> `"logging.info("`
 
 # StackTrace
 ```
@@ -135,4 +154,38 @@ For hard-to-resolve dependencies, install dependencies to a separate virtual env
 ./dep_env/python -m pip install .
 
 shiv --python python3.12 --site-packages ./dep_env/lib64/python3.9/site-package -o ~/bin/my_lib -c my_lib
+```
+
+# DEV libraries
+
+## Parallelize
+
+* `concurrent.futures` - asynchronous execution providing the following executors -
+  * `ProcessPoolExecutor` - separate memory & python executor [CPU-bound]
+  * `ThreadPoolExecutor` - lightweight, shared memory [I/O-bound]
+
+NOTE - The instance of `ThreadPoolExecutor` or `ProcessPoolExecutor` parallelizes via a `executor.map` function, that only operates on one input at a time. To add additional inputs, use `functools::partial`, e.g.
+
+  ```
+  worker_fn = partial(_process_tsv_line, headers=headers)
+  executor.map(worker_fn, entries)
+  ```
+
+```
+from concurrent.futures import ProcessPoolExecutor
+import time
+
+def compute_square(n: int) -> int:
+  time.sleep(0.5)
+  return n * n
+
+if __name__ == "__main__":
+  print("Starting parallel processing...")
+  numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+  start_time = time.time()
+  with ProcessPoolExecutor(max_workers=4) as executor:
+    results = list(executor.map(compute_square, numbers))
+  end_time = time.time()
+  print(f"Results: {results}")
+  print(f"Completed in {end_time - start_time:.2f} seconds.")
 ```
