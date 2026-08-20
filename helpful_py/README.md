@@ -79,6 +79,40 @@ yum -y install pip python-devel
 apt install python3.10-dev
 ```
 
+## Reproducing package installations
+
+First and foremost, use environment locking tools, like `uv`, `conda`, and containerization.
+
+  * `uv` - Pins exact primary and sub-dependency versions alongside SHA-256 hashes (`uv pip compile --generate-hashes`)
+  
+  * `conda` - Locks exact pre-compiled binary build hashes for both Python packages and underlying system C-libraries (htslib, samtools, glibc) (`conda list --explicit`) 
+  
+  * Containerization (docker / podman / singularity) 
+
+**Notes if not using those tools** - the virtualenv will grab tool versions seeded on the host machine leading to silent dependency drift. This can especially be an issue even if `pip freeze`'ing the environment. Setup tools like `pip`, may be different and different versions may adhere to different lint standards. To ensure as-nearly-identical replications as possible, do the following - 
+
+**Grab exact versions**
+
+```bash
+$ <INSTALLED_PACKAGE>/env/bin/pip --version
+pip 22.1...
+$ <INSTALLED_PACKAGE>/env/bin/python -c "import setuptools, wheel; print(f'setuptools: {setuptools.__version__}'); print(f'wheel: {wheel.__version__}')"
+setuptools: 62.2.0
+wheel: 0.37.1
+$ <INSTALLED_PACKAGE>/env/bin/pip freeze > requirements.txt
+```
+
+**Install w/ exact versions**
+
+```bash
+# Force exact core build tooling versions before installing dependencies
+$ <NEW_PATH>/env/bin/python -m pip install "pip==22.1" "setuptools==62.2.0" "wheel==0.37.1"
+
+# Install pinned dependencies
+<NEW_PATH>/env/bin/pip install -r <INSTALLED_PACKAGE> requirements.txt
+```
+
+
 # `uv`
 tool for managing python environments
 
