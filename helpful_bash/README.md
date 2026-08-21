@@ -1,5 +1,16 @@
 # Helpful Reference
 
+## Scripting
+
+### Shebang, interpreter directive
+
+Safest - searches your `PATH` to locate the bash 
+* vs. potentially failing `#!/bin/bash` if that path does not exist somehow
+
+```
+#!/usr/bin/env bash
+```
+
 ## Options
 
 ***Strict mode***
