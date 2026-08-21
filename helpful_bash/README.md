@@ -282,6 +282,20 @@ echo "LOG=${LOG}"
 { time ${CMD}; } 2> log_time.out > ${LOG}
 ```
 
+## Shell parameter expansion
+
+Keyboard Mnemonic: 
+* `#` is to the left of `$` (removes from the left/start)
+* `%` is to the right of `$` (removes from the right/end)
+
+| Syntax | Target | Match Length | Example Pattern* | Output* |
+| --- | --- | --- | --- | --- |
+| `${FILE#pattern}` | Prefix (start) | Shortest | `${FILE#*/}` | `var/log/app.tar.gz` |
+| `${FILE##pattern}` | Prefix (start) | Longest | `${FILE##*/}` | `app.tar.gz` |
+| `${FILE%pattern}` | Suffix (end) | Shortest | `${FILE%.*}` | `/var/log/app.tar` |
+| `${FILE%%pattern}` | Suffix (end) | Longest | `${FILE%%.*}` | `/var/log/app` |
+
+Based on Example Input, `FILE="/var/log/app.tar.gz"`
 
 ## Wrapper around logging & running command
 
