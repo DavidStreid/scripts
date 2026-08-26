@@ -297,7 +297,9 @@ Keyboard Mnemonic:
 
 Based on Example Input, `FILE="/var/log/app.tar.gz"`
 
-## Wrapper around logging & running command
+## Helpful bash functions
+
+### Wrapper around logging & running command
 
 simple way - `set -x` (start logging) & `set +x` (stop logging)
 ```
@@ -325,5 +327,63 @@ run_cmd () {
     # Exit script if command fails
     exit 1   
   fi
+}
+```
+
+### TSV viewing
+
+#### Demo
+
+Grab SFARI annotations of diseases linked to autism and list one gene's link
+
+```
+curl "https://gene.sfari.org//wp-content/themes/sfari-gene/utilities/download-csv.php?api-endpoint=genes" 2>/dev/null | sed 's/,/\t/g' > sfari.tsv
+
+t_head sfari.tsv
+#     1	status
+#     2	gene-symbol
+#     3	gene-name
+#     4	ensembl-id
+#     5	chromosome
+#     6	genetic-category
+#     7	gene-score
+#     8	syndromic
+#     9	eagle
+#    10	number-of-reports
+
+t_entry sfari.tsv 2,8 AUTS2
+# gene-symbol	AUTS2
+#syndromic	 Genetic Association
+```
+
+**Get header indices**
+
+```
+# tsv_headers() {
+t_head() {
+    if [[ -z "$1" ]]; then
+        echo "Usage: t_head <file>" >&2
+        return 1
+    fi
+    head -n 1 "$1" | tr '\t' '\n' | cat -n
+}
+```
+
+**View side-by-side header-value pair for specified columns**
+
+```
+# tsv_view_entry() {
+t_entry() {
+    if [[ $# -lt 3 ]]; then
+        echo "Usage: t_entry <file> <columns> <keyword>" >&2
+        return 1
+    fi
+
+    local file="$1"
+    local cols="$2"
+    local keyword="$3"
+
+    paste <(head -n 1 "$file" | cut -f"$cols" | tr '\t' '\n') \
+          <(grep -m 1 -- "$keyword" "$file" | cut -f"$cols" | tr '\t' '\n')
 }
 ```
