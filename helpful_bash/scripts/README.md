@@ -14,6 +14,6 @@ Sorting new.tsv -> new.tsv_v1
 Sorting old.tsv -> old.tsv_v2
 COMPARING
 1	stable_id	stable_id	SAME
-2	dynamic_field_1	dynamic_field_1	DIFFERENT
+2	dynamic_field_1	dynamic_field_1	DIFF
 ...
 ```
