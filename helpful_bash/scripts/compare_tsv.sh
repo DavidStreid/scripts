@@ -36,9 +36,9 @@ for ((i=1; i<=min_cols; i++)); do
   diff <(cut -f${i} ${V1_SORTED}) <(cut -f${i} ${V2_SORTED}) > ${out}
   d=$(wc -l ${out} | sed 's/^  *//g' | sed 's/  */\t/g' | cut -f1)
   if [[ ${d} -gt 0 ]]; then
-    printf "${i}\t${c_col}\t${o_col}\tDIFF\n"
+    printf '%s\t%s\t%s\tDIFF\n' "${i}" "${c_col}" "${o_col}"
   else
-    printf "${i}\t${c_col}\t${o_col}\tSAME\n"
+    printf '%s\t%s\t%s\tSAME\n' "${i}" "${c_col}" "${o_col}"
     rm ${out}
   fi
 done 2>&1 | tee comparison.tsv
