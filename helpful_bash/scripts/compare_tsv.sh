@@ -22,8 +22,17 @@ echo "Sorting ${base_v2} -> ${V2_SORTED}"
 head -1 ${V2} > ${V2_SORTED}
 tail -n+2 ${V2} | sort >> ${V2_SORTED}
 
-echo "COMPARING"
-for i in {1..153}; do
+# Get column counts for both files
+num_cols1=$(awk -F'\t' 'NR==1{print NF}' "${V1}")
+num_cols2=$(awk -F'\t' 'NR==1{print NF}' "${V2}")
+
+# Calculate the minimum using a ternary arithmetic evaluation
+(( min_cols = num_cols1 < num_cols2 ? num_cols1 : num_cols2 ))
+
+echo "Comparing up to column ${min_cols}..."
+
+echo "COMPARING, n=${min_cols} (new: ${num_cols1}, old: ${num_cols2})"
+for ((i=1; i<=min_cols; i++)); do
   c_col=$(head -1 ${V2_SORTED} | cut -f${i})
   o_col=$(head -1 ${V1_SORTED} | cut -f${i})
   out=col${i}.txt
