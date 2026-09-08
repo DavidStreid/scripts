@@ -223,9 +223,11 @@ done 3< data.tsv
 # 4 + 5 = 9
 ```
 
-## `wait`
+## Time Commands: `sleep` & `watch`
 
-Wait before running a command, without units, it's seconds
+`sleep` - wait before running a command, without units, it's seconds
+
+`watch` - run command every X seconds
 
 Example - sleep for two days before running a command in the background and then logging resource usage every minute
 * NOTE - could also be `sleep 172800; ...`
