@@ -1,14 +1,17 @@
 #!/bin/bash
+# pass the two directories and type of file you are comparing
 DIR1=$1
 DIR2=$2
+SFX=$3
 
-echo "D1=${DIR1}"
-echo "D2=${DIR2}"
+echo "DIR1=${DIR1}"
+echo "DIR2=${DIR2}"
+echo "SFX=${SFX}"
 
 # 1. Get relative paths from DIR1
-files1=$(cd "$DIR1" && find . -type f -name "*.py")
+files1=$(cd "$DIR1" && find . -type f -name "*.${SFX}")
 # 2. Get relative paths from DIR2
-files2=$(cd "$DIR2" && find . -type f -name "*.py")
+files2=$(cd "$DIR2" && find . -type f -name "*.${SFX}")
 # 3. Combine and deduplicate into a single list
 ALL_FILES=$(printf "%s\n%s\n" "$files1" "$files2" | sort -u)
 for file in $ALL_FILES; do
