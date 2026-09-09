@@ -33,6 +33,24 @@ top -p ${PID}
 htop -p $PID
 ```
 
+## Executables
+
+### `command -v` vs. `which`
+
+`command` - built into almost all POSIX shells
+
+```
+command -v bedtools
+# /usr/local/bin/bedtools
+```
+
+`which` - external utility package
+```
+which bedtools
+# /usr/local/bin/bedtools
+```
+
+
 ## Profiling spawned processes
 
 Understanding resource usage of processes. Best to use `PGID` vs `PPID` to get the overall resource allocation in case processes spawn other subprocesses
