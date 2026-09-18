@@ -172,6 +172,16 @@ e.g. Log and observe
 $ my_cmd 2>&1 | tee log_my_cmd.out 
 ```
 
+**Cloning to multiple inputs**
+
+* `tee` is required to stream to multiple commands like this
+
+```
+cat sample.vcf | tee >(wc -l) >(tail -1) > /dev/null
+# chrY	57088836	612	A	C	12.01	PASS	.	GT	0/1
+# 6762
+```
+
 ## `awk`
 ### Sum list of numbers
 
