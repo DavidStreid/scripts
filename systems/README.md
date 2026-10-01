@@ -1,3 +1,16 @@
+# Architecture
+
+`uname` - prints basic system hardware details, such as machine architecture (`-m`)
+```
+uname -m
+```
+
+`arch` - outputs the system's processor architecture
+```
+arch
+```
+
+
 # SWAP MEM investigation
 
 ## Checks
