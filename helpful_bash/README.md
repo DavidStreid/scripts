@@ -399,3 +399,35 @@ t_entry() {
           <(grep -m 1 -- "$keyword" "$file" | cut -f"$cols" | tr '\t' '\n')
 }
 ```
+
+
+## Navigation
+
+### `tree`
+
+Show the directory structure.
+
+Helpful options
+* `-L` - how many levels down to show files
+* `-P` - pattern match files, e.g. below -
+
+```
+$ tree -P '*report*' --prune
+.
+├── summary_report.txt
+└── workspace
+    ├── dev
+    │   └── project_a
+    │       ├── monthly_report.json
+    │       └── summary_report.txt
+    ├── prod
+    │   └── project_b
+    │       ├── monthly_report.json
+    │       └── summary_report.txt
+    └── staging
+        └── project_a
+            ├── monthly_report.json
+            └── summary_report.txt
+
+7 directories, 7 files
+```
