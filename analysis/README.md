@@ -9,6 +9,18 @@ $ graph_csv training.csv			# Graph all features alone
 $ classify training.csv test.csv category	# Test KNN, Random-forest, svm, logitstic regression on training
 ```
 
+## Splunk
+
+### "Caching"
+
+1. Create a report and schedule
+2. Load into splunk search (e.g. "APP" is "search")
+
+```
+| loadjob savedsearch="<USERNAME>:<APP>:<REPORT_NAME>"
+| stats count by category
+```
+
 ## Test classifiers (`test_classifiers.py`)
 ### Inputs
 * `training file`: `*.csv` (required), comma-separated file containing features and label
